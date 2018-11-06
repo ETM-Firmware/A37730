@@ -68,8 +68,9 @@
 #endif
 
 #ifdef __A37730_002
-#define __MODE_ETHERNET_INTERFACE
-#define __MODE_MODBUS_MONITOR
+//#define __MODE_ETHERNET_INTERFACE
+#define __MODE_MODBUS_INTERFACE
+//#define __MODE_MODBUS_MONITOR
 #define __OPTION_ENABLE_CAN
 #define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
 #define HEATER_RAMP_TIME                        21000        // 3.5min
@@ -221,12 +222,16 @@
 
 #define HEATER_REGULATION_INCREMENT           50       // (50mV) This is the regulation increment for the heater voltage
 
+#define OVER_PRF_COUNT                        5       //  50ms
+
 
 
 #define HEATER_VOLTAGE_CURRENT_LIMITED_FAULT_TIME   500 // 5 Seconds
 
 #define CURRENT_LIMITED_FAULT_HOLDOFF_TIME    10      // 10 seconds at the start of heater warmup before current limit fault is timed
 #define FAULT_HOLDOFF_STATE                   22
+
+#define MAX_PRF_DECI_HZ                       550
 
 
 #ifdef __CAN_CONTROLS

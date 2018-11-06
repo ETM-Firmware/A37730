@@ -19,9 +19,10 @@
 #include <uart.h>
 #include "ETM.h"
 #include "P1395_CAN_SLAVE.h"
-#include "MCP23008.h"
 #include "FIRMWARE_VERSION.h"
 #include "TCPmodbus\TCPmodbus.h"
+#include "ETM_TICK.h"
+
 //#include "faults.h"
 
 #define FCY_CLK                    10000000
@@ -31,19 +32,19 @@
 /*
   Hardware Module Resource Usage
 
-  CAN2   - Used/Configured by ETM CAN (optical CAN) 
-  CAN1   - Used/Configured by ETM CAN (hardware CAN) - Not implimented/tested
+  CAN2   - Not used
+  CAN1   - Used/Configured by ETM CAN (optical CAN)
   Timer4 - Used/Configured by ETM CAN - Used to Time sending of messages (status update / logging data and such) 
   Timer5 - Used/Configured by ETM CAN - Used for detecting error on can bus
 
-  SPI1   - Used for communicating with Converter Logic Board
+  SPI1   - Used for communicating with Ethernet module
   SPI2   - Used for communicating with on board DAC
 
-  Timer2 - Used for 10msTicToc 
+  Timer2 - ? 
 
-  ADC Module - AN3,AN4,AN5,AN6,AN7,VREF+,VREF-,AN13,AN14,AN15
+  ADC Module - AN3,AN4,AN5,AN6,AN7,VREF+,VREF-,AN8,AN9,AN10
 
-  I2C    - Used to communicate with on board EEPROM (not used at this time)
+  I2C    - Not used
   
   EEPROM - The internal EEPROM is used at this time
   
@@ -59,20 +60,38 @@
 
 
 // Pins to be configured as inputs
-
-
 /*
+  RA6  - ILOCK RELAY CLOSED
+  RA7  - ENABLE RELAY CLOSED
   RA9  - ADC VREF-
   RA10 - ADC VREF+
-  RA14 - PIN_CUSTOMER_HV_ON
+  RA13 - ARC SIGNAL
+  RA14 - ETHERNET INTERRUPT  (Configured By Pic Module)
+  RA15 - PULSE GATE INTERRUPT
  
-  RB0  - ICD  - PROGRAM
-  RB1  - ICD  - PROGRAM
-  RB13 - AN13 - PIC ADC 5V MON
-  RB14 - AN14 - PIC ADC +15V MON
-  RB15 - AN15 - PIC ADC -15V MON
+  RB0  - ICD - PROGRAM
+  RB1  - ICD - PROGRAM
+  RB3  - AN3 - GUN I PK ADC
+  RB4  - AN4 - HV I ADC
+  RB5  - AN5 - HV V ADC
+  RB6  - AN6 - HTR V ADC
+  RB7  - AN7 - HTR I ADC
+  RB8  - AN8 - TOP V ADC
+  RB9  - AN9 - BIAS V ADC
+  RB10 - AN10 - THERM ADC
+  RB11 - AN11 - 5V MON ADC  CURRENTLY REMOVED (OPTIONAL)
+ 
+  RC1  - GH_BIAS_FAULT
+  RC2  - GH_HARDWARE_FAULT
+  RC3  - GH_TOP_HTR_OV_FAULT
+  RC4  - GH_TOP_HTR_UV_FAULT
+  RC13 - CUSTOMER BEAM ENABLE
+  RC14 - CUSTOMER HV ON
 
-  RD8  - PIN_CUSTOMER_BEAM_ENABLE
+  RD0  - ETHERNET CS  (Configured By Pic Module)
+  RD8  - PULSE GATE INPUT CAPTURE
+  RD11 - ETHERNET CLK OUT  (Configured By Pic Module)
+  RD15 - CATHODE CURRENT PULSE INPUT CAPTURE
 
 
   RF0  - CAN 1 (Configured By Pic Module)
@@ -84,50 +103,82 @@
   RF8  - SPI 1 (Configured By Pic Module)
 
 
-  RG0  - CAN 2 (Configured By Pic Module)
-  RG1  - CAN 2 (Configured By Pic Module)
-  RG2  - I2C   (Configured By Pic Module)
-  RG3  - I2C   (Configured By Pic Module)
-  RG6  - SPI2 CLK
-  RG7  - SPI2 DI
-  RG8  - SPI2 DO
-  RG14 - Reset Detect
+  RG0  - 15V SUPPLY ENABLE
+  RG1  - 12V SUPPLY ENABLE
+  RG2  - DAC LDAC (Configured By Pic Module)
+  RG3  - DAC CS/LD (Configured By Pic Module)
+  RG6  - SPI2 (Configured By Pic Module)
+  RG7  - SPI2 (Configured By Pic Module)
+  RG8  - SPI2 (Configured By Pic Module)
+  RG15 - PIC_TEMP_LT_75
   
   Configured by other software modules and should be left as inputs during port configuration:
-  RA15 (Ethernet Module Interrupt Input)
-  RC1  (Ethernet Module Reset Output)
-  RD11 (Ethernet Module Clock Input)
-  RG15 (Ethernet Module CS Output)
+   ETHERNET
+   SPI 1
+   SPI 2
+   UART 1 (RS-485)
+   CAN 1
+   DAC
 
+
+  Pins to be configured as outputs
+  ------------------------------
+  A12 - PW LIMIT
+ 
+  B2  - CPU BEAM ENABLE
+  B12 - INTEG1
+  B13 - INTEG2
+  B14 - CPU HTR ENABLE
+  B15 - CPU TOP ENABLE
+ 
+  C15 - CLOCK OUT
+ 
+  D1  - HV ON SELECT
+  D2  - BEAM ENABLE SELECT
+  D3  - PULSE INPUT SELECT
+  D4  - LED GREEN 1
+  D5  - LED GREEN 2
+  D6  - LED RED
+  D7  - TEST POINT 1
+  D12 - HV ON SERIAL
+  D13 - BEAM ENABLE SERIAL
+ 
+  F4  - RS_485 ENABLE
+  F5  - TEST POINT 2
+ 
+  G14 - CPU HV ENABLE
+  
 */
-
-#define A37730_TRISA_VALUE 0b1101011000000000 
-#define A37730_TRISB_VALUE 0b1110000011111011 
-#define A37730_TRISC_VALUE 0b0000000000000010 
-#define A37730_TRISD_VALUE 0b0001110100010000 
-#define A37730_TRISF_VALUE 0b0000000111001111 
-#define A37730_TRISG_VALUE 0b1100000111001111 
-
-
 /*
    F E D C B A 9 8 7 6 5 4 3 2 1 0
 
-A  0 1 0 1 0 1 1 0 0 0 0 0 0 0 0 0
+A  1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1
 
-B  1 1 1 0 0 0 0 0 1 1 1 1 1 0 1 1 
+B  0 0 0 0 1 1 1 1 1 1 1 1 1 0 1 1 
 
-C  0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 
+C  0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 
-D  0 0 0 1 0 1 0 1 0 0 0 1 0 0 0 0 
+D  1 1 0 0 1 1 1 1 0 0 0 0 0 0 0 1 
 
-E  0 0 0 0 0 0 0 1 1 1 0 0 1 1 1 1 
+F  1 1 1 1 1 1 1 1 1 1 0 0 1 1 1 1 
 
-F  1 1 0 0 0 0 0 1 1 1 0 0 1 1 1 1 
+G  1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 
 */
+
+
+#define A37730_TRISA_VALUE 0b1110111111111111 
+#define A37730_TRISB_VALUE 0b0000111111111011 
+#define A37730_TRISC_VALUE 0b0111111111111111 
+#define A37730_TRISD_VALUE 0b1100111100000001 
+#define A37730_TRISF_VALUE 0b1111111111001111 
+#define A37730_TRISG_VALUE 0b1011111111111111 
+
+
+
 /*
   This sets up the ADC to work as following
-  AUTO Sampeling
+  AUTO Sampling
   External Vref+/Vref-
   With 10MHz System Clock, ADC Clock is 450ns, Sample Time is 6 ADC Clock so total sample time is 9.0uS
   8 Samples per Interrupt, use alternating buffers
@@ -140,92 +191,89 @@ F  1 1 0 0 0 0 0 1 1 1 0 0 1 1 1 1
 #define ADCON2_SETTING          (ADC_VREF_AVDD_EXT & ADC_SCAN_ON & ADC_SAMPLES_PER_INT_8 & ADC_ALT_BUF_ON & ADC_ALT_INPUT_OFF)
 #define ADCON3_SETTING          (ADC_SAMPLE_TIME_4 & ADC_CONV_CLK_SYSTEM & ADC_CONV_CLK_9Tcy2)
 #define ADCHS_SETTING           (ADC_CH0_POS_SAMPLEA_AN3 & ADC_CH0_NEG_SAMPLEA_VREFN & ADC_CH0_POS_SAMPLEB_AN3 & ADC_CH0_NEG_SAMPLEB_VREFN)
-#define ADPCFG_SETTING          (ENABLE_AN13_ANA & ENABLE_AN14_ANA & ENABLE_AN15_ANA)
-#define ADCSSL_SETTING          (SKIP_SCAN_AN0 & SKIP_SCAN_AN1 & SKIP_SCAN_AN2 & SKIP_SCAN_AN3 & SKIP_SCAN_AN4 & SKIP_SCAN_AN5 & SKIP_SCAN_AN6 & SKIP_SCAN_AN7 & SKIP_SCAN_AN8 & SKIP_SCAN_AN9 & SKIP_SCAN_AN10 & SKIP_SCAN_AN11 & SKIP_SCAN_AN12)
+#define ADPCFG_SETTING          (ENABLE_AN3_ANA & ENABLE_AN4_ANA & ENABLE_AN5_ANA & ENABLE_AN6_ANA & ENABLE_AN7_ANA & ENABLE_AN8_ANA & ENABLE_AN9_ANA & ENABLE_AN10_ANA)
+#define ADCSSL_SETTING          (SKIP_SCAN_AN0 & SKIP_SCAN_AN1 & SKIP_SCAN_AN2 & SKIP_SCAN_AN11 & SKIP_SCAN_AN12 & SKIP_SCAN_AN13 & SKIP_SCAN_AN14 & SKIP_SCAN_AN15)
 
 
 
 
 // Digital Inputs
-#define PIN_CUSTOMER_HV_ON                           _RA14
+#define PIN_CUSTOMER_HV_ON                           _RC14
 #define ILL_PIN_CUSTOMER_HV_ON_ENABLE_HV             1
 
-#define PIN_CUSTOMER_BEAM_ENABLE                     _RD8
+#define PIN_CUSTOMER_BEAM_ENABLE                     _RC13
 #define ILL_PIN_CUSTOMER_BEAM_ENABLE_BEAM_ENABLED    1
 
-#define PIN_GRID_PULSE_INTERRUPT                     _RA12
-#define PIN_INTERLOCK_RELAY_STATUS                   _RD4
-#define PIN_GRID_PULSE_INPUT_CAPTURE                 _RD12
+#define PIN_ARC_INTERRUPT                            _RA13
+#define PIN_ETHERNET_INTERRUPT                       _RA15
+#define PIN_TRIG_PULSE_INTERRUPT                     _RA15
+#define PIN_TRIG_PULSE_INPUT_CAPTURE                 _RD8
+#define PIN_CATH_I_PULSE_INPUT_CAPTURE               _RD15
+#define PIN_ETHERNET_CLOCK_OUT                       _RD11
 
-#define ILL_PIN_INTERLOCK_RELAY_STATUS_CLOSED            1
+#define PIN_TEMP_LT_75C                              _RG15
+#define ILL_PIN_TEMP_IS_LT_75C                       1               
+
+#define PIN_INTERLOCK_RELAY_STATUS                   _RA6
+#define PIN_ENABLE_RELAY_STATUS                      _RA7
+#define ILL_PIN_RELAY_STATUS_CLOSED                  1
+
+#define PIN_GH_BIAS_FAULT                            _RC1 
+#define PIN_GH_HARDWARE_FAULT                        _RC2
+#define PIN_GH_TOP_HTR_OV_FAULT                      _RC3
+#define PIN_GH_TOP_HTR_UV_FAULT                      _RC4
+#define ILL_GH_FAULT_ACTIVE                          0
 
 //------------------- GUN Driver Interface I/O ------------------------- //
-#define PIN_CS_DAC                                   _LATD13
-#define OLL_PIN_CS_DAC_SELECTED                      1
-
-#define PIN_CS_ADC                                   _LATD14
-#define OLL_PIN_CS_ADC_SELECTED                      1
-
-#define PIN_CS_FPGA                                  _LATD15
-#define OLL_PIN_CS_FPGA_SELECTED                     1
-
-#define CS_LATCH_REGISTER                            LATD
-#define OLL_CS_PINS_SELECTED                         0xE0
-
+//#define PIN_CS_DAC                                   _LATD13
+//#define OLL_PIN_CS_DAC_SELECTED                      1
 
 
 // Digital Outputs
 
-#define PIN_ILOCK_ON_SERIAL                          _LATD3
-#define PIN_HV_ON_SERIAL                             _LATD2
-#define PIN_BEAM_ENABLE_SERIAL                       _LATD1
+#define PIN_HV_ON_SERIAL                             _LATD12
+#define PIN_BEAM_ENABLE_SERIAL                       _LATD13
 #define OLL_SERIAL_ENABLE                            1
 
-#define PIN_CPU_15V_SUPPLY_ENABLE                    _LATD10  //set as input for high impedance to enable
+#define PIN_15V_SUPPLY_ENABLE                        _LATG0  //set as input for high impedance to enable
+#define PIN_12V_SUPPLY_ENABLE                        _LATG1  //set as input for high impedance to enable
 
-#define OLL_ENABLE                                   1
+#define PIN_TRIG_PULSE_WIDTH_LIMITER                 _LATA12
+#define OLL_TRIG_PULSE_DISABLE                       0
 
-#define PIN_CPU_ILOCK_ENABLE                         _LATD5
-#define PIN_CPU_PULSE_ENABLE                         _LATD6
+#define PIN_HV_ON_SELECT                             _LATD1
+#define PIN_BEAM_ENABLE_SELECT                       _LATD2
+#define OLL_SELECT_SERIAL_CONTROL                    1
 
-#define OLL_PIN_CPU_PULSE_ENABLE_PULSE_ENABLED       1
-    // OLL_PIN_CPU_HV_ENABLE_HV_ENABLED defined in A37730_CONFIG.h file
+#define PIN_TRIGGER_INPUT_SELECT                     _LATD3
+#define OLL_SELECT_OPTICAL_TRIGGER                   1
+
+#define PIN_CPU_HTR_ENABLE                           _LATB14
+#define PIN_CPU_TOP_ENABLE                           _LATB15
+#define PIN_CPU_HV_ENABLE                            _LATG14
+#define PIN_CPU_BEAM_ENABLE                          _LATB2
+#define OLL_CPU_ENABLE                               1
 
 
 #define PIN_RS485_ENABLE                             _LATF4
 
+#define PIN_INTEGRATOR_1                             _LATB12
+#define PIN_INTEGRATOR_2                             _LATB13
 
-// LED Indicator Output Pins
 #define OLL_LED_ON                                   0
 
-#define PIN_LED_I1B                                  _LATG12
-#define PIN_LED_I1C                                  _LATG13
-#define PIN_LED_I1D                                  _LATA7
-
-#define PIN_LED_I2A                                  _LATC2
-#define PIN_LED_I2B                                  _LATC3
-#define PIN_LED_I2C                                  _LATC4
-#define PIN_LED_I2D                                  _LATA6
-
-#define PIN_RESET_DETECT_OUTPUT                      _LATG14
-#define PIN_RESET_DETECT_INPUT                       _RG14
-
-#define PIN_TEST_POINT_B                             _LATD9
-#define PIN_TEST_POINT_E                             _LATB8
-#define PIN_TEST_POINT_F                             _LATB9
+#define PIN_LED_GREEN_1                              _LATD4
+#define PIN_LED_GREEN_2                              _LATD5
+#define PIN_LED_RED                                  _LATD6
 
 
+#define PIN_TEST_POINT_1                             _LATD7
+#define PIN_TEST_POINT_2                             _LATF5
 
-#define PIN_LED_BEAM_ENABLE                          PIN_LED_I2A
-#define PIN_LED_I2C_OPERATION                        PIN_LED_I2B  // This pin is controlled by the CAN Module
-#define PIN_LED_OPERATIONAL                          PIN_LED_I2C
-#define PIN_LED_SYSTEM_OK                            PIN_LED_I2D
+#define PIN_LED_I2C_OPERATION                        PIN_LED_GREEN_1  // This pin is controlled by the CAN Module
+#define PIN_LED_OPERATIONAL                          PIN_LED_GREEN_2
 
-// THIS PIN IS ALWAYS ON WHEN POWERED                PIN_LED_I1A
-#define PIN_LED_WARMUP                               PIN_LED_I1B
-#define PIN_LED_STANDBY                              PIN_LED_I1C
-#define PIN_LED_HV_ON                                PIN_LED_I1D
-
+#define PIN_LED_FAULT_STATE                          PIN_LED_RED
 
 
 // -----------------------  END IO PIN CONFIGURATION ------------------------ //
@@ -244,21 +292,28 @@ F  1 1 0 0 0 0 0 1 1 1 0 0 1 1 1 1
 #define A37730_SPI1STAT_VALUE (SPI_ENABLE & SPI_IDLE_CON & SPI_RX_OVFLOW_CLR)   
 
 
-/*
-  --- Timer2 Setup ---
-  Period of 10mS
-*/
-#define A37730_T2CON_VALUE     (T2_ON & T2_IDLE_CON & T2_GATE_OFF & T2_PS_1_8 & T2_32BIT_MODE_OFF & T2_SOURCE_INT)
-#define A37730_PR2_VALUE_US    10000   // 10mS
-#define A37730_PR2_VALUE       ((FCY_CLK/1000000)*A37730_PR2_VALUE_US/8)
+///*
+//  --- Timer2 Setup ---
+//  Period of 10mS
+//*/
+//#define A37730_T2CON_VALUE     (T2_ON & T2_IDLE_CON & T2_GATE_OFF & T2_PS_1_8 & T2_32BIT_MODE_OFF & T2_SOURCE_INT)
+//#define A37730_PR2_VALUE_US    10000   // 10mS
+//#define A37730_PR2_VALUE       ((FCY_CLK/1000000)*A37730_PR2_VALUE_US/8)
+
+///*
+//  --- Timer3 Setup ---
+//  Period of 1S
+//*/
+//#define A37730_T3CON_VALUE     (T3_ON & T3_IDLE_CON & T3_GATE_OFF & T3_PS_1_256 & T3_SOURCE_INT)
+//#define A37730_PR3_VALUE_US    1000000   // 1s
+//#define A37730_PR3_VALUE       ((FCY_CLK/1000000)*A37730_PR3_VALUE_US/256)
 
 /*
   --- Timer3 Setup ---
-  Period of 1S
+  Period of 400mS
 */
-#define A37730_T3CON_VALUE     (T3_ON & T3_IDLE_CON & T3_GATE_OFF & T3_PS_1_256 & T3_SOURCE_INT)
-#define A37730_PR3_VALUE_US    1000000   // 1s
-#define A37730_PR3_VALUE       ((FCY_CLK/1000000)*A37730_PR3_VALUE_US/256)
+#define A37730_T3CON_VALUE     (T3_ON & T3_IDLE_CON & T3_GATE_OFF & T3_PS_1_64 & T3_SOURCE_INT)
+#define A37730_PR3_VALUE        62500  // 400mS
 
  
 // ---- Hard Coded Delays ---- //
@@ -286,18 +341,14 @@ F  1 1 0 0 0 0 0 1 1 1 0 0 1 1 1 1
 #define ADC_DATA_DIGITAL_HIGH                        0x0800
 
 #define TARGET_CUSTOMER_HARDWARE_REV                 0b000100
-#define TARGET_FPGA_FIRMWARE_MAJOR_REV               0b0001
-#define TARGET_FPGA_FIRMWARE_MINOR_REV               0b000010
-
-#define TARGET_FPGA_FIRMWARE_REV                     0b01000010    // 0x42 'B'
 #define INTERFACE_HARDWARE_REV                       0b01000001    // 0x41 'A'
   
-// MAX1230 Control Words
-#define MAX1230_CONVERSION_BYTE                      0b10000011
-//#define MAX1230_SETUP_BYTE                           0b01101000    //with internal ref
-#define MAX1230_SETUP_BYTE                           0b01100100    //with external ref
-#define MAX1230_AVERAGE_BYTE                         0b00111000
-#define MAX1230_RESET_BYTE                           0b00010000
+//// MAX1230 Control Words
+//#define MAX1230_CONVERSION_BYTE                      0b10000011
+////#define MAX1230_SETUP_BYTE                           0b01101000    //with internal ref
+//#define MAX1230_SETUP_BYTE                           0b01100100    //with external ref
+//#define MAX1230_AVERAGE_BYTE                         0b00111000
+//#define MAX1230_RESET_BYTE                           0b00010000
 
 
 
@@ -352,10 +403,18 @@ typedef struct {
   unsigned int modbus_references_enabled;
   unsigned int ethernet_references_enabled;
   
+  unsigned int last_period;                     // This is for PRF calculation
+  unsigned int trigger_complete;                // This is for trigger
+  unsigned int period_filtered;
+  unsigned int limiting_active;
+  unsigned int rep_rate_deci_hertz;
+  unsigned int over_prf;
+  unsigned int pulses_on;
+  
+  unsigned long tick_timer;
+  unsigned long tick_period_timer;
+  
   unsigned int accumulator_counter;             // This counts the number of converstion on the internal ADC (used for averaging)
-  unsigned int adc_read_error_count;            // This counts the total number of errors on reads from the adc on the converter logic board
-  unsigned int adc_read_error_test;             // This increments when there is an adc read error and decrements when there is not.  If it exceeds a certain value a fault is generated
-  unsigned int adc_read_ok;                     // This indicates if the previous adc read was successful or not
 
   unsigned int dac_write_error_count;           // This counts the total number of dac write errors
   unsigned int dac_write_failure_count;         // This counts the total number of unsessful dac transmissions (After N write errors it gives us)
@@ -384,29 +443,29 @@ typedef struct {
 
 
   // These are the Data Structures for the Digital Data from the FPGA on the Converter Logic board
-  TYPE_DIGITAL_INPUT fpga_coverter_logic_pcb_rev_mismatch;
-  TYPE_DIGITAL_INPUT fpga_firmware_major_rev_mismatch;
-  TYPE_DIGITAL_INPUT fpga_firmware_minor_rev_mismatch;
-  TYPE_DIGITAL_INPUT fpga_arc;
-  TYPE_DIGITAL_INPUT fpga_arc_high_voltage_inihibit_active;
-  TYPE_DIGITAL_INPUT fpga_heater_voltage_less_than_4_5_volts;
-  TYPE_DIGITAL_INPUT fpga_module_temp_greater_than_65_C;
-  TYPE_DIGITAL_INPUT fpga_module_temp_greater_than_75_C;
-  TYPE_DIGITAL_INPUT fpga_pulse_width_limiting_active;
-  TYPE_DIGITAL_INPUT fpga_prf_fault;
-  TYPE_DIGITAL_INPUT fpga_current_monitor_pulse_width_fault;
-  TYPE_DIGITAL_INPUT fpga_grid_module_hardware_fault;
-  TYPE_DIGITAL_INPUT fpga_grid_module_over_voltage_fault;
-  TYPE_DIGITAL_INPUT fpga_grid_module_under_voltage_fault;
-  TYPE_DIGITAL_INPUT fpga_grid_module_bias_voltage_fault;
-  TYPE_DIGITAL_INPUT fpga_hv_regulation_warning;
-  TYPE_DIGITAL_INPUT fpga_dipswitch_1_on;
-  TYPE_DIGITAL_INPUT fpga_test_mode_toggle_switch_set_to_test;
-  TYPE_DIGITAL_INPUT fpga_local_mode_toggle_switch_set_to_local;
+//  TYPE_DIGITAL_INPUT fpga_coverter_logic_pcb_rev_mismatch;
+//  TYPE_DIGITAL_INPUT fpga_firmware_major_rev_mismatch;
+//  TYPE_DIGITAL_INPUT fpga_firmware_minor_rev_mismatch;
+//  TYPE_DIGITAL_INPUT fpga_arc;
+//  TYPE_DIGITAL_INPUT fpga_arc_high_voltage_inihibit_active;
+//  TYPE_DIGITAL_INPUT fpga_heater_voltage_less_than_4_5_volts;
+//  TYPE_DIGITAL_INPUT fpga_module_temp_greater_than_65_C;
+//  TYPE_DIGITAL_INPUT fpga_module_temp_greater_than_75_C;
+//  TYPE_DIGITAL_INPUT fpga_pulse_width_limiting_active;
+//  TYPE_DIGITAL_INPUT fpga_prf_fault;
+//  TYPE_DIGITAL_INPUT fpga_current_monitor_pulse_width_fault;
+//  TYPE_DIGITAL_INPUT fpga_grid_module_hardware_fault;
+//  TYPE_DIGITAL_INPUT fpga_grid_module_over_voltage_fault;
+//  TYPE_DIGITAL_INPUT fpga_grid_module_under_voltage_fault;
+//  TYPE_DIGITAL_INPUT fpga_grid_module_bias_voltage_fault;
+//  TYPE_DIGITAL_INPUT fpga_hv_regulation_warning;
+//  TYPE_DIGITAL_INPUT fpga_dipswitch_1_on;
+//  TYPE_DIGITAL_INPUT fpga_test_mode_toggle_switch_set_to_test;
+//  TYPE_DIGITAL_INPUT fpga_local_mode_toggle_switch_set_to_local;
 
 
-  // These are Data Structures for the ADC input from the converter logic board
-  AnalogInput  input_adc_temperature;
+  // These are Data Structures for the inputs to the PIC's internal ADC
+  
   AnalogInput  input_hv_v_mon;
   AnalogInput  input_hv_i_mon;
   AnalogInput  input_gun_i_peak;
@@ -416,21 +475,27 @@ typedef struct {
   AnalogInput  input_bias_v_mon;
   AnalogInput  input_24_v_mon;
   AnalogInput  input_temperature_mon;
-  TYPE_DIGITAL_INPUT adc_digital_warmup_flt;
-  TYPE_DIGITAL_INPUT adc_digital_watchdog_flt;
-  TYPE_DIGITAL_INPUT adc_digital_arc_flt;
-  TYPE_DIGITAL_INPUT adc_digital_over_temp_flt;
-  TYPE_DIGITAL_INPUT adc_digital_pulse_width_duty_flt;
-  TYPE_DIGITAL_INPUT adc_digital_grid_flt;
+//  TYPE_DIGITAL_INPUT adc_digital_warmup_flt;
+//  TYPE_DIGITAL_INPUT adc_digital_watchdog_flt;
+//  TYPE_DIGITAL_INPUT adc_digital_arc_flt;
+//  TYPE_DIGITAL_INPUT adc_digital_over_temp_flt;
+//  TYPE_DIGITAL_INPUT adc_digital_pulse_width_duty_flt;
+//  TYPE_DIGITAL_INPUT adc_digital_grid_flt;
   AnalogInput  input_dac_monitor;
 
   TYPE_DIGITAL_INPUT interlock_relay_closed;
+  TYPE_DIGITAL_INPUT enable_relay_closed;
+  TYPE_DIGITAL_INPUT gh_digital_bias_flt;
+  TYPE_DIGITAL_INPUT gh_digital_hw_flt;
+  TYPE_DIGITAL_INPUT gh_digital_top_htr_ov_flt;
+  TYPE_DIGITAL_INPUT gh_digital_top_htr_uv_flt;
+  TYPE_DIGITAL_INPUT digital_temp_lt_75;
   
-  // These are the anlog input from the PICs internal DAC
 
-  AnalogInput  pos_5v_mon;  // an13
-  AnalogInput  pos_15v_mon; // an14
-  AnalogInput  neg_15v_mon; // an15
+
+//  AnalogInput  pos_5v_mon;  // an13
+//  AnalogInput  pos_15v_mon; // an14
+//  AnalogInput  neg_15v_mon; // an15
   
 } TYPE_GLOBAL_DATA_A37730;
 
@@ -445,7 +510,7 @@ extern TYPE_GLOBAL_DATA_A37730 global_data_A37730;
 
 
 
-#define _FAULT_FPGA_FIRMWARE_MAJOR_REV_MISMATCH        _FAULT_0 // CHECKED_DP// Heater Fault
+#define _FAULT_UNUSED_0                                _FAULT_0 // CHECKED_DP// Heater Fault
 #define _FAULT_ADC_HV_V_MON_OVER_RELATIVE              _FAULT_1 // CHECKED_DP
 #define _FAULT_ADC_HV_V_MON_UNDER_RELATIVE             _FAULT_1 // CHECKED_DP
 #define _FAULT_ADC_HTR_V_MON_OVER_RELATIVE             _FAULT_2 // CHECKED_DP// Heater Fault
@@ -456,12 +521,16 @@ extern TYPE_GLOBAL_DATA_A37730 global_data_A37730;
 #define _FAULT_ADC_TOP_V_MON_UNDER_RELATIVE            _FAULT_5 // CHECKED_DP
 #define _FAULT_ADC_BIAS_V_MON_OVER_ABSOLUTE            _FAULT_6 // CHECKED_DP 
 #define _FAULT_ADC_BIAS_V_MON_UNDER_ABSOLUTE           _FAULT_6 // CHECKED_DP
-#define _FAULT_SPI_COMMUNICATION                       _FAULT_7
+#define _FAULT_UNUSED_1                                _FAULT_7
 #define _FAULT_ADC_DIGITAL_ARC                         _FAULT_8
-#define _FAULT_ADC_DIGITAL_OVER_TEMP                   _FAULT_9
-#define _FAULT_ADC_DIGITAL_GRID                        _FAULT_A                 
+#define _FAULT_DIGITAL_OVER_TEMP                       _FAULT_9
+#define _FAULT_ADC_DIGITAL_GRID                        _FAULT_A
+#define _FAULT_GRID_HEATER_HARDWARE                    _FAULT_A
+#define _FAULT_DIGITAL_TOP_HEATER_OV                   _FAULT_A
+#define _FAULT_DIGITAL_TOP_HEATER_UV                   _FAULT_A
+#define _FAULT_DIGITAL_BIAS                            _FAULT_A
 #define _FPGA_CURRENT_MONITOR_PULSE_WIDTH_FAULT        _FAULT_B
-#define _FPGA_PRF_FAULT                                _FAULT_C
+#define _FAULT_OVER_PRF                                _FAULT_C
 #define _FAULT_HEATER_VOLTAGE_CURRENT_LIMITED          _FAULT_D
 #define _FAULT_HEATER_RAMP_TIMEOUT                     _FAULT_E
 #define _FAULT_MUX_CONFIG_FAILURE                      _FAULT_F
@@ -475,8 +544,8 @@ extern TYPE_GLOBAL_DATA_A37730 global_data_A37730;
 #define _STATUS_DAC_WRITE_FAILURE                      _WARNING_3
 #define _STATUS_INTERLOCK_INHIBITING_HV                _WARNING_4
 //#define _FPGA_CUSTOMER_HARDWARE_REV_MISMATCH           _WARNING_6
-//#define _FPGA_FIRMWARE_MINOR_REV_MISMATCH              _WARNING_5
-#define _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE        _WARNING_5
+#define _STATUS_ENABLE_RELAY_CLOSED                    _WARNING_5
+//#define _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE        _WARNING_5
 #define _FPGA_ARC_COUNTER_GREATER_ZERO                 _WARNING_6
 #define _FPGA_ARC_HIGH_VOLTAGE_INHIBIT_ACTIVE          _WARNING_6
 //#define _FPGA_MODULE_TEMP_GREATER_THAN_65_C            _WARNING_8
@@ -488,13 +557,8 @@ extern TYPE_GLOBAL_DATA_A37730 global_data_A37730;
 #define _FPGA_GRID_MODULE_UNDER_VOLTAGE_FAULT          _WARNING_A
 #define _FPGA_GRID_MODULE_BIAS_VOLTAGE_FAULT           _WARNING_B
 #define _FPGA_HV_REGULATION_WARNING                    _WARNING_C
-#define _FPGA_DIPSWITCH_1_ON                           _WARNING_D
-#define _FPGA_TEST_MODE_TOGGLE_SWITCH_TEST_MODE        _WARNING_E
-#define _FPGA_LOCAL_MODE_TOGGLE_SWITCH_LOCAL_MODE      _WARNING_F
 
 
-
-#define ETM_CAN_REGISTER_GUN_DRIVER_RESET_FPGA        0x8202
 
 
 #define STATE_FAULT_HEATER_FAILURE           00
@@ -502,7 +566,7 @@ extern TYPE_GLOBAL_DATA_A37730 global_data_A37730;
 #define STATE_FAULT_HEATER_OFF               20
 #define STATE_START_UP                       30
 #define STATE_WAIT_FOR_CONFIG                40
-#define STATE_RESET_FPGA                     50
+#define STATE_RESET_FAULTS                   50
 #define STATE_HEATER_DISABLED                60
 #define STATE_HEATER_RAMP_UP                 70
 #define STATE_HEATER_WARM_UP                 80

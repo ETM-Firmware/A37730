@@ -27,9 +27,9 @@
         <itemPath>TCPmodbus/TcpServerCanFormat.h</itemPath>
       </logicalFolder>
       <itemPath>FIRMWARE_VERSION.h</itemPath>
-      <itemPath>A37474.h</itemPath>
-      <itemPath>A37474_CONFIG.h</itemPath>
-      <itemPath>MCP23008.h</itemPath>
+      <itemPath>A37730.h</itemPath>
+      <itemPath>A37730_CONFIG.h</itemPath>
+      <itemPath>ETM_TICK.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -53,8 +53,9 @@
         <itemPath>TCPmodbus/TCPmodbus.c</itemPath>
         <itemPath>TCPmodbus/TcpServerCanFormat.c</itemPath>
       </logicalFolder>
-      <itemPath>A37474.c</itemPath>
-      <itemPath>MCP23008.c</itemPath>
+      <itemPath>A37730.c</itemPath>
+      <itemPath>ETM_TICK.c</itemPath>
+      <itemPath>ETM_TICK_ASM.s</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

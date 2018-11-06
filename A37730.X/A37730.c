@@ -485,7 +485,11 @@ void InitializeA37730(void) {
 
   // --------- BEGIN IO PIN CONFIGURATION ------------------
 
-
+  PIN_HV_ON_SELECT = OLL_SELECT_SERIAL_CONTROL;             //serial control
+  PIN_BEAM_ENABLE_SELECT = OLL_SELECT_SERIAL_CONTROL;       //serial control
+  PIN_TRIGGER_INPUT_SELECT = !OLL_SELECT_OPTICAL_TRIGGER;   //optical trig
+  PIN_INTEGRATOR_1 = 0;
+  PIN_INTEGRATOR_2 = 0;
 	  
   // ---- Configure the dsPIC ADC Module Analog Inputs------------ //
   ADPCFG = 0xFFFF;             // all are digital I/O

@@ -205,7 +205,7 @@ G  1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 #define ILL_PIN_CUSTOMER_BEAM_ENABLE_BEAM_ENABLED    1
 
 #define PIN_ARC_INTERRUPT                            _RA13
-#define PIN_ETHERNET_INTERRUPT                       _RA15
+#define PIN_ETHERNET_INTERRUPT                       _RA14
 #define PIN_TRIG_PULSE_INTERRUPT                     _RA15
 #define PIN_TRIG_PULSE_INPUT_CAPTURE                 _RD8
 #define PIN_CATH_I_PULSE_INPUT_CAPTURE               _RD15

@@ -550,7 +550,7 @@ void InitializeA37730(void) {
   _ADON = 1;
   
   
-#ifdef __MODE_MODBUS_MONITOR
+#ifdef __MODBUS_MONITOR
   ETMModbusInit();
 #endif
 
@@ -597,11 +597,12 @@ void InitializeA37730(void) {
 
 #ifdef __CAN_ENABLED
   // Initialize the Can module
-  ETMCanSlaveInitialize(CAN_PORT_2, FCY_CLK, ETM_CAN_ADDR_GUN_DRIVER_BOARD, _PIN_RC4, 4, _PIN_RC3, _PIN_RC3);
+  ETMCanSlaveInitialize(CAN_PORT_2, FCY_CLK, ETM_CAN_ADDR_GUN_DRIVER_BOARD, _PIN_RD4, 4, _PIN_RD5, _PIN_RD5);
   ETMCanSlaveLoadConfiguration(37474, BOARD_DASH_NUMBER, FIRMWARE_AGILE_REV, FIRMWARE_BRANCH, FIRMWARE_MINOR_REV);
 #endif
 
-  SetupLTC265X(&U29_LTC2654, ETM_SPI_PORT_2, FCY_CLK, LTC265X_SPI_2_5_M_BIT, _PIN_RG15, _PIN_RC1);
+  SetupLTC265X(&U29_LTC2654, ETM_SPI_PORT_2, FCY_CLK, LTC265X_SPI_2_5_M_BIT, _PIN_RG3, _PIN_RG2);
+  WriteLTC265X(&U29_LTC2654, LTC265X_CMD_SELECT_INTERNAL_REFERENCE_BYTE, 0);
   
   
   if (ETMTickNotInitialized()) {
@@ -1400,7 +1401,8 @@ void DoA37730(void) {
 	
 
       case 1:
-        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_B, global_data_A37730.analog_output_top_voltage.dac_setting_scaled_and_calibrated);
+        //WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_B, global_data_A37730.analog_output_top_voltage.dac_setting_scaled_and_calibrated);
+        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_B, 0xFFFF);
         ETMCanSlaveSetDebugRegister(1, global_data_A37730.analog_output_top_voltage.dac_setting_scaled_and_calibrated);
         break;
 

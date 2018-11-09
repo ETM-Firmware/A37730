@@ -414,6 +414,8 @@ typedef struct {
   unsigned int over_prf;
   unsigned int pulses_on;
   
+  unsigned int testDAC;
+  
   unsigned long tick_timer;
   unsigned long tick_period_timer;
   

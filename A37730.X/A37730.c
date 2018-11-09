@@ -119,8 +119,10 @@ LTC265X U29_LTC2654;
 
 int main(void) {
   global_data_A37730.control_state = STATE_START_UP;
+  global_data_A37730.testDAC = WATCHDOG_VALUE_1;
+    
   while (1) {
-    DoStateMachine();
+    DoStateMachine();   
   }
 }
 
@@ -174,6 +176,8 @@ void DoStateMachine(void) {
       global_data_A37730.heater_start_up_attempts = 0;
     }
     global_data_A37730.heater_voltage_current_limited = 0;
+    global_data_A37730.testDAC = WATCHDOG_VALUE_1;
+
     while (global_data_A37730.control_state == STATE_HEATER_DISABLED) {
       DoA37730();
       if (global_data_A37730.request_heater_enable) {
@@ -482,17 +486,6 @@ void InitializeA37730(void) {
 
   _CONTROL_REGISTER = 0;
   _NOT_LOGGED_REGISTER = 0;
-
-  // --------- BEGIN IO PIN CONFIGURATION ------------------
-
-  PIN_HV_ON_SELECT = OLL_SELECT_SERIAL_CONTROL;             //serial control
-  PIN_BEAM_ENABLE_SELECT = OLL_SELECT_SERIAL_CONTROL;       //serial control
-  PIN_TRIGGER_INPUT_SELECT = !OLL_SELECT_OPTICAL_TRIGGER;   //optical trig
-  PIN_INTEGRATOR_1 = 0;
-  PIN_INTEGRATOR_2 = 0;
-	  
-  // ---- Configure the dsPIC ADC Module Analog Inputs------------ //
-  ADPCFG = 0xFFFF;             // all are digital I/O
  
   // Initialize all I/O Registers
   TRISA = A37730_TRISA_VALUE;
@@ -501,11 +494,25 @@ void InitializeA37730(void) {
   TRISD = A37730_TRISD_VALUE;
   TRISF = A37730_TRISF_VALUE;
   TRISG = A37730_TRISG_VALUE;
+  
+    // ---- Configure the dsPIC ADC Module Analog Inputs------------ //
+  ADPCFG = 0xFFFF;             // all are digital I/O
+  
+    // --------- BEGIN IO PIN CONFIGURATION ------------------
+
+  PIN_HV_ON_SELECT = OLL_SELECT_SERIAL_CONTROL;             //serial control
+  PIN_BEAM_ENABLE_SELECT = OLL_SELECT_SERIAL_CONTROL;       //serial control
+  PIN_TRIGGER_INPUT_SELECT = !OLL_SELECT_OPTICAL_TRIGGER;   //optical trig
+  PIN_INTEGRATOR_1 = 0;
+  PIN_INTEGRATOR_2 = 0;
+  PIN_HV_ON_SERIAL = !OLL_SERIAL_ENABLE;
+  PIN_BEAM_ENABLE_SERIAL = !OLL_SERIAL_ENABLE;  
 
   // Config SPI2 for DAC
   ConfigureSPI(ETM_SPI_PORT_1, A37730_SPI1CON_VALUE, 0, A37730_SPI1STAT_VALUE, SPI_CLK_1_MBIT, FCY_CLK);  
   
-
+  ETMTickInitialize(FCY_CLK, ETM_TICK_USE_TIMER_2);
+  SetupLTC265X(&U29_LTC2654, ETM_SPI_PORT_2, FCY_CLK, LTC265X_SPI_2_5_M_BIT, _PIN_RG3, _PIN_RG2);
   // ---------- Configure Timers ----------------- //
 
   
@@ -525,14 +532,9 @@ void InitializeA37730(void) {
 //  
 //    
 
-  
-
   //Configure EEPROM
-  ETMEEPromUseExternal();
-  ETMEEPromConfigureExternalDevice(EEPROM_SIZE_8K_BYTES, FCY_CLK, 400000, EEPROM_I2C_ADDRESS_0, 1);
-   
-  PIN_HV_ON_SERIAL = !OLL_SERIAL_ENABLE;
-  PIN_BEAM_ENABLE_SERIAL = !OLL_SERIAL_ENABLE;         
+  ETMEEPromUseInternal();
+//  ETMEEPromConfigureExternalDevice(EEPROM_SIZE_8K_BYTES, FCY_CLK, 400000, EEPROM_I2C_ADDRESS_0, 1);       
   
   
   // ------------- Configure Internal ADC --------- //
@@ -600,14 +602,15 @@ void InitializeA37730(void) {
   ETMCanSlaveInitialize(CAN_PORT_2, FCY_CLK, ETM_CAN_ADDR_GUN_DRIVER_BOARD, _PIN_RD4, 4, _PIN_RD5, _PIN_RD5);
   ETMCanSlaveLoadConfiguration(37474, BOARD_DASH_NUMBER, FIRMWARE_AGILE_REV, FIRMWARE_BRANCH, FIRMWARE_MINOR_REV);
 #endif
-
-  SetupLTC265X(&U29_LTC2654, ETM_SPI_PORT_2, FCY_CLK, LTC265X_SPI_2_5_M_BIT, _PIN_RG3, _PIN_RG2);
-  WriteLTC265X(&U29_LTC2654, LTC265X_CMD_SELECT_INTERNAL_REFERENCE_BYTE, 0);
+//  ETMTickInitialize(FCY_CLK, ETM_TICK_USE_TIMER_2);
+//  SetupLTC265X(&U29_LTC2654, ETM_SPI_PORT_2, FCY_CLK, LTC265X_SPI_2_5_M_BIT, _PIN_RG3, _PIN_RG2);
+  //WriteLTC265X(&U29_LTC2654, LTC265X_CMD_SELECT_INTERNAL_REFERENCE_BYTE, 0);
   
   
-  if (ETMTickNotInitialized()) {
-    ETMTickInitialize(FCY_CLK, ETM_TICK_USE_TIMER_2);  
-  }
+//  if (ETMTickNotInitialized()) {
+//    ETMTickInitialize(FCY_CLK, ETM_TICK_USE_TIMER_2);  
+//  }
+  
   
 #ifdef __ETHERNET_REFERENCE
     
@@ -758,8 +761,7 @@ void InitializeA37730(void) {
 
   //Reset faults/warnings and inputs
   ResetAllFaultInfo();
-  
-  
+   
   
 }
 
@@ -948,7 +950,7 @@ void DoA37730(void) {
 
   unsigned long temp32;
 //  TCPmodbus_task(0); //ETHERNET
-    
+//  PIN_LED_FAULT_STATE = OLL_LED_ON; //test  
   if (global_data_A37730.trigger_complete) {
     global_data_A37730.tick_period_timer  = ETMTickGet();
     DoPostTriggerProcess();
@@ -971,7 +973,6 @@ void DoA37730(void) {
   ETMModbusSlaveDoModbus();
 #endif
 
-  ETMDigitalUpdateInput(&global_data_A37730.interlock_relay_closed, PIN_INTERLOCK_RELAY_STATUS);
   
 #ifdef __MODBUS_CONTROLS
 
@@ -1021,6 +1022,7 @@ void DoA37730(void) {
       
     unsigned int timer_report;
   
+
     if (PIN_CUSTOMER_HV_ON == ILL_PIN_CUSTOMER_HV_ON_ENABLE_HV) {
       global_data_A37730.request_hv_enable = 1;
       _STATUS_CUSTOMER_HV_ON = 1;
@@ -1387,33 +1389,37 @@ void DoA37730(void) {
     ETMAnalogScaleCalibrateDACSetting(&global_data_A37730.analog_output_top_voltage);
     ETMAnalogScaleCalibrateDACSetting(&global_data_A37730.analog_output_heater_voltage);
     
-
+ // WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_D, global_data_A37730.testDAC);
     // Send out Data to local DAC and offboard.  Each channel will be updated once every 40mS
     // Do not send out while in state "STATE_WAIT_FOR_CONFIG" because the module is not ready to receive data and
     // you will just get data transfer errors
+
     if (global_data_A37730.control_state != STATE_WAIT_FOR_CONFIG) {
       switch ((global_data_A37730.run_time_counter & 0b111)) {
 	
       case 0:
-        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_A, global_data_A37730.analog_output_high_voltage.dac_setting_scaled_and_calibrated);
+        //WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_A, global_data_A37730.analog_output_high_voltage.dac_setting_scaled_and_calibrated);
+        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_A, global_data_A37730.testDAC);
         ETMCanSlaveSetDebugRegister(0, global_data_A37730.analog_output_high_voltage.dac_setting_scaled_and_calibrated);
         break;
 	
 
       case 1:
         //WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_B, global_data_A37730.analog_output_top_voltage.dac_setting_scaled_and_calibrated);
-        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_B, 0xFFFF);
+        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_B, global_data_A37730.testDAC);
         ETMCanSlaveSetDebugRegister(1, global_data_A37730.analog_output_top_voltage.dac_setting_scaled_and_calibrated);
         break;
 
     
       case 2:
-        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_C, global_data_A37730.analog_output_heater_voltage.dac_setting_scaled_and_calibrated);
+        //WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_C, global_data_A37730.analog_output_heater_voltage.dac_setting_scaled_and_calibrated);
+        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_C, global_data_A37730.testDAC);
         ETMCanSlaveSetDebugRegister(2, global_data_A37730.analog_output_heater_voltage.dac_setting_scaled_and_calibrated);
         break;
 
       
       case 3:
+        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_D, global_data_A37730.testDAC);
         ETMCanSlaveSetDebugRegister(3, global_data_A37730.dac_digital_hv_enable);
         break;
 
@@ -1434,7 +1440,7 @@ void DoA37730(void) {
     
   
       case 7:
-
+        
         break;
       }
     }
@@ -1661,9 +1667,9 @@ void UpdateLEDandStatusOutuputs(void) {
   // System OK Status
 //  if (global_data_A37730.control_state <= STATE_FAULT_HEATER_ON) {
   if (_FAULT_REGISTER != 0) {
-    PIN_LED_FAULT_STATE = OLL_LED_ON;
+    //PIN_LED_FAULT_STATE = OLL_LED_ON;
   } else {
-    PIN_LED_FAULT_STATE = !OLL_LED_ON;
+    //PIN_LED_FAULT_STATE = !OLL_LED_ON;
   }
 }
 

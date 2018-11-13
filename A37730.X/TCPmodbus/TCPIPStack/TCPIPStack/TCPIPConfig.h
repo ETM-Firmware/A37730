@@ -51,7 +51,7 @@
 #ifndef TCPIPCONFIG_STUB_H
 #define TCPIPCONFIG_STUB_H
 
-#define CFG_INCLUDE_EX16_ENC28
+#define CFG_INCLUDE_EX16_ENC624
 // These definitions are set in the MPLAB Project settings.  If you are starting
 // a new project, you should start by modifying one of the pre-existing .mcp 
 // files.  To modify the macro used, in MPLAB IDE, click on Project -> Build 
@@ -95,7 +95,7 @@
 			#elif defined(CFG_INCLUDE_UDP_PERF)
 				#include "Configs/TCPIP ENC624 UDP_PERF.h"
 			#else
-				#include "Configs/TCPIP ENC624.h"
+				#include "TCPIPENC624.h"
 			#endif
 #elif	defined(CFG_INCLUDE_PICDN2_MRF24WB) || defined(CFG_INCLUDE_PICDN2_MRF24WG)           || \
 		defined(CFG_INCLUDE_PIC18EX_MRF24WB) || defined(CFG_INCLUDE_PIC18EX_MRF24WG) || \

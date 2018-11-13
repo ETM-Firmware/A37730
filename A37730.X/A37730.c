@@ -481,7 +481,7 @@ void DoStateMachine(void) {
 
 
 void InitializeA37730(void) {
-//  IPCONFIG ip_config;   //ETHERNET
+  IPCONFIG ip_config;   //ETHERNET
   // Initialize the status register and load the inhibit and fault masks
 
   _CONTROL_REGISTER = 0;
@@ -581,19 +581,19 @@ void InitializeA37730(void) {
   }
 #else
   
-//    ip_config.ip_addr =  ((unsigned long)modbus_slave_hold_reg_0x0D << 24) & 0xFF000000;   //ETHERNET
-//    ip_config.ip_addr += ((unsigned long)modbus_slave_hold_reg_0x0C << 16) & 0x00FF0000;
-//    ip_config.ip_addr += ((unsigned long)modbus_slave_hold_reg_0x0B << 8) & 0x0000FF00;
-//    ip_config.ip_addr += (unsigned long)modbus_slave_hold_reg_0x0A & 0x000000FF;
-//  
-//    if ((ip_config.ip_addr == 0xFFFFFFFF) || (ip_config.ip_addr == 0x00000000)) {
-//      ip_config.ip_addr = DEFAULT_IP_ADDRESS;
-//    }
-//  
-//    ip_config.remote_ip_addr = DEFAULT_REMOTE_IP_ADDRESS;
+    ip_config.ip_addr =  ((unsigned long)modbus_slave_hold_reg_0x0D << 24) & 0xFF000000;   //ETHERNET
+    ip_config.ip_addr += ((unsigned long)modbus_slave_hold_reg_0x0C << 16) & 0x00FF0000;
+    ip_config.ip_addr += ((unsigned long)modbus_slave_hold_reg_0x0B << 8) & 0x0000FF00;
+    ip_config.ip_addr += (unsigned long)modbus_slave_hold_reg_0x0A & 0x000000FF;
+  
+    if ((ip_config.ip_addr == 0xFFFFFFFF) || (ip_config.ip_addr == 0x00000000)) {
+      ip_config.ip_addr = DEFAULT_IP_ADDRESS;
+    }
+  
+    ip_config.remote_ip_addr = DEFAULT_REMOTE_IP_ADDRESS;
 
 #endif
-//  TCPmodbus_init(&ip_config); //ETHERNET
+  TCPmodbus_init(&ip_config); //ETHERNET
 
   
 
@@ -767,25 +767,25 @@ void InitializeA37730(void) {
 
 
 void SetCustomIP(void) {
-//  IPCONFIG ip_config;  //ETHERNET
+  IPCONFIG ip_config;  //ETHERNET
 //  
 //    //Format:  192.168.70.99
 //    //          A   B  C  D 
 //
-//  ip_config.ip_addr =  ((unsigned long)modbus_slave_hold_reg_0x0D << 24) & 0xFF000000;
-//  ip_config.ip_addr += ((unsigned long)modbus_slave_hold_reg_0x0C << 16) & 0x00FF0000;
-//  ip_config.ip_addr += ((unsigned long)modbus_slave_hold_reg_0x0B << 8) & 0x0000FF00;
-//  ip_config.ip_addr += (unsigned long)modbus_slave_hold_reg_0x0A & 0x000000FF;
-//  
-//  if ((ip_config.ip_addr == 0xFFFFFFFF) || (ip_config.ip_addr == 0x00000000)) {
-//    ip_config.ip_addr = DEFAULT_IP_ADDRESS;
-//  }
-//  ip_config.remote_ip_addr = DEFAULT_REMOTE_IP_ADDRESS;
-//      
-//  TCPmodbus_task(1);  //close socket
-//
-//  TCPmodbus_init(&ip_config);
-    Nop();
+  ip_config.ip_addr =  ((unsigned long)modbus_slave_hold_reg_0x0D << 24) & 0xFF000000;
+  ip_config.ip_addr += ((unsigned long)modbus_slave_hold_reg_0x0C << 16) & 0x00FF0000;
+  ip_config.ip_addr += ((unsigned long)modbus_slave_hold_reg_0x0B << 8) & 0x0000FF00;
+  ip_config.ip_addr += (unsigned long)modbus_slave_hold_reg_0x0A & 0x000000FF;
+  
+  if ((ip_config.ip_addr == 0xFFFFFFFF) || (ip_config.ip_addr == 0x00000000)) {
+    ip_config.ip_addr = DEFAULT_IP_ADDRESS;
+  }
+  ip_config.remote_ip_addr = DEFAULT_REMOTE_IP_ADDRESS;
+      
+     TCPmodbus_task(1);  //close socket
+
+  TCPmodbus_init(&ip_config);
+ //   Nop();
 }
 
 
@@ -949,7 +949,7 @@ unsigned int CheckPreHVFault(void) {
 void DoA37730(void) {
 
   unsigned long temp32;
-//  TCPmodbus_task(0); //ETHERNET
+  TCPmodbus_task(0); //ETHERNET
 //  PIN_LED_FAULT_STATE = OLL_LED_ON; //test  
   if (global_data_A37730.trigger_complete) {
     global_data_A37730.tick_period_timer  = ETMTickGet();

@@ -82,7 +82,7 @@
 #elif defined(ENC_CS_TRIS) || defined(WF_CS_TRIS)
 	#include "ENC28J60.h"
 #elif defined(ENC100_INTERFACE_MODE)
-	#include "TCPIPStack/ENCX24J600.h"
+	#include "ENCX24J600.h"
 	#define PHYREG WORD
 #elif defined(__PIC32MX__) && defined(_ETH)
 	// extra includes for PIC32MX with embedded ETH Controller

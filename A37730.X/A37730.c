@@ -502,7 +502,7 @@ void InitializeA37730(void) {
 
   PIN_HV_ON_SELECT = OLL_SELECT_SERIAL_CONTROL;             //serial control
   PIN_BEAM_ENABLE_SELECT = OLL_SELECT_SERIAL_CONTROL;       //serial control
-  PIN_TRIGGER_INPUT_SELECT = !OLL_SELECT_OPTICAL_TRIGGER;   //optical trig
+  PIN_TRIGGER_INPUT_SELECT = !OLL_SELECT_OPTICAL_TRIGGER;   //select BNC trig
   PIN_INTEGRATOR_1 = 0;
   PIN_INTEGRATOR_2 = 0;
   PIN_HV_ON_SERIAL = !OLL_SERIAL_ENABLE;
@@ -969,7 +969,7 @@ void DoA37730(void) {
   ClrWdt();
 #endif
   
-#ifdef __MODE_MODBUS_MONITOR
+#ifdef __MODBUS_MONITOR
   ETMModbusSlaveDoModbus();
 #endif
 
@@ -1267,7 +1267,7 @@ void DoA37730(void) {
       timer_report = 0;
     }
     
-#ifdef __MODE_MODBUS_MONITOR
+#ifdef __MODBUS_MONITOR
     modbus_slave_hold_reg_0x21 = global_data_A37730.input_htr_v_mon.reading_scaled_and_calibrated;
     modbus_slave_hold_reg_0x22 = global_data_A37730.input_htr_i_mon.reading_scaled_and_calibrated;
     modbus_slave_hold_reg_0x23 = global_data_A37730.input_top_v_mon.reading_scaled_and_calibrated;
@@ -1405,15 +1405,15 @@ void DoA37730(void) {
 	
 
       case 1:
-        //WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_B, global_data_A37730.analog_output_top_voltage.dac_setting_scaled_and_calibrated);
-        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_B, global_data_A37730.testDAC);
+        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_B, global_data_A37730.analog_output_top_voltage.dac_setting_scaled_and_calibrated);
+        //WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_B, global_data_A37730.testDAC);
         ETMCanSlaveSetDebugRegister(1, global_data_A37730.analog_output_top_voltage.dac_setting_scaled_and_calibrated);
         break;
 
     
       case 2:
-        //WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_C, global_data_A37730.analog_output_heater_voltage.dac_setting_scaled_and_calibrated);
-        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_C, global_data_A37730.testDAC);
+        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_C, global_data_A37730.analog_output_heater_voltage.dac_setting_scaled_and_calibrated);
+        //WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_C, global_data_A37730.testDAC);
         ETMCanSlaveSetDebugRegister(2, global_data_A37730.analog_output_heater_voltage.dac_setting_scaled_and_calibrated);
         break;
 

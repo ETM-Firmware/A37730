@@ -6,14 +6,14 @@
 
 //#define __A37730_000_TEST_GUN
 //#define __A37730_001
-#define __A37730_002
+#define __A37730_000
 
 
 
 // Make sure that at least one board is selected
 #ifndef __A37730_000_TEST_GUN
 #ifndef __A37730_001
-#ifndef __A37730_002
+#ifndef __A37730_000
 #error "No Specific Board Selected"
 #endif
 #endif
@@ -67,11 +67,11 @@
 #endif
 #endif
 
-#ifdef __A37730_002
-//#define __MODE_ETHERNET_INTERFACE
-#define __MODE_MODBUS_INTERFACE
-//#define __MODE_MODBUS_MONITOR
-#define __OPTION_ENABLE_CAN
+#ifdef __A37730_000
+#define __MODE_ETHERNET_INTERFACE
+//#define __MODE_MODBUS_INTERFACE
+#define __MODBUS_MONITOR
+//#define __OPTION_ENABLE_CAN
 #define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
 #define HEATER_RAMP_TIME                        21000        // 3.5min
 #define RAMP_TIME_INTERVAL                      30           // 300ms
@@ -84,7 +84,7 @@
 #define TOP_MIN_SET_BOARD_SPEC                  0            // -80V
 #define BIAS_OVER_VOLTAGE                       18000        // -180V
 #define BIAS_UNDER_VOLTAGE                      14000        // -140V
-#define BOARD_DASH_NUMBER                       002          // for A37730-002Z
+#define BOARD_DASH_NUMBER                       000          // for A37730-000Z
 #endif
 
 
@@ -251,43 +251,43 @@
 #define ADC_TEMPERATURE_SENSOR_FIXED_OFFSET   0
 
 
-#define ADC_HV_VMON_FIXED_SCALE               .34722
+#define ADC_HV_VMON_FIXED_SCALE               1.0760  //.34722
 #define ADC_HV_VMON_FIXED_OFFSET              0
 #define ADC_HV_VMON_RELATIVE_TRIP_SCALE       MACRO_DEC_TO_CAL_FACTOR_2(.2)
 #define ADC_HV_VMON_RELATIVE_TRIP_FLOOR       1000                     
 #define ADC_HV_VMON_RELATIVE_TRIP_COUNT       50                                // 500mS
 
 
-#define ADC_HV_IMON_FIXED_SCALE               .10419
+#define ADC_HV_IMON_FIXED_SCALE               .32296  //.10419
 #define ADC_HV_IMON_FIXED_OFFSET              0
 
 
-#define ADC_GUN_I_PEAK_FIXED_SCALE            .17313
+#define ADC_GUN_I_PEAK_FIXED_SCALE            .53665  //.17313
 #define ADC_GUN_I_PEAK_FIXED_OFFSET           0
 
 
-#define ADC_HTR_V_MON_FIXED_SCALE             .13875
+#define ADC_HTR_V_MON_FIXED_SCALE             .43010  //.13875
 #define ADC_HTR_V_MON_FIXED_OFFSET            0
 #define ADC_HTR_V_MON_RELATIVE_TRIP_SCALE     MACRO_DEC_TO_CAL_FACTOR_2(.2)
 #define ADC_HTR_V_MON_RELATIVE_TRIP_FLOOR     200                               // Minimum 200mV
 #define ADC_HTR_V_MON_RELATIVE_TRIP_COUNT     50                                // 500mS
 
 
-#define ADC_HTR_I_MON_FIXED_SCALE             .10419
+#define ADC_HTR_I_MON_FIXED_SCALE             .32296  //.10419
 #define ADC_HTR_I_MON_FIXED_OFFSET            0
 #define ADC_HTR_I_MON_OVER_LIMIT_ABSOLUTE     HTR_OC_ABS    //1750                              // 1.750 Amps
 #define ADC_HTR_I_MON_UNDER_LIMIT_ABSOLUTE    200                               // 0.200 Amps
 #define ADC_HTR_I_MON_ABSOLUTE_TRIP_TIME      50                                // 500mS
 
 
-#define ADC_TOP_V_MON_FIXED_SCALE             .69438
+#define ADC_TOP_V_MON_FIXED_SCALE             2.1520  //.69438
 #define ADC_TOP_V_MON_FIXED_OFFSET            0
 #define ADC_TOP_V_MON_RELATIVE_TRIP_SCALE     MACRO_DEC_TO_CAL_FACTOR_2(.2)
 #define ADC_TOP_V_MON_RELATIVE_TRIP_FLOOR     1000                              // 10 Volts
 #define ADC_TOP_V_MON_RELATIVE_TRIP_TIME      50                                // 500mS 
 
 
-#define ADC_BIAS_V_MON_FIXED_SCALE            .34688
+#define ADC_BIAS_V_MON_FIXED_SCALE            1.0750  //.34688
 #define ADC_BIAS_V_MON_FIXED_OFFSET           0
 #define ADC_BIAS_V_MON_OVER_LIMIT_ABSOLUTE    BIAS_OVER_VOLTAGE
 #define ADC_BIAS_V_MON_UNDER_LIMIT_ABSOLUTE   BIAS_UNDER_VOLTAGE

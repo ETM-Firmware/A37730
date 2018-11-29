@@ -168,6 +168,9 @@ void DoStateMachine(void) {
     
     
   case STATE_HEATER_DISABLED:
+    DisableBeam();     // TEST
+    PIN_BEAM_ENABLE_SERIAL = !OLL_SERIAL_ENABLE;   // TEST
+    DisableHighVoltage();   // TEST
     DisableHeater();
     PIN_TRIG_PULSE_WIDTH_LIMITER = !OLL_TRIG_PULSE_DISABLE; //do not actively limit PW
     global_data_A37730.current_state_msg = STATE_MESSAGE_START_UP;
@@ -258,6 +261,9 @@ void DoStateMachine(void) {
     _CONTROL_NOT_READY = 1;
     DisableBeam();
     DisableHighVoltage();
+    EnableTopSupply();  // TEST
+    PIN_BEAM_ENABLE_SERIAL = OLL_SERIAL_ENABLE;   // TEST
+    EnableBeam();   // TEST
     global_data_A37730.current_state_msg = STATE_MESSAGE_HEATER_WARM_UP_DONE;
     global_data_A37730.heater_start_up_attempts = 0;
     while (global_data_A37730.control_state == STATE_HEATER_WARM_UP_DONE) {
@@ -843,11 +849,11 @@ void ResetAllFaultInfo(void) {
 //  ETMDigitalInitializeInput(&global_data_A37730.fpga_hv_regulation_warning                 , 0, 30);
 //
   // Initialize Digital Input Filters For PIC "Digital" Inputs
-  ETMDigitalInitializeInput(&global_data_A37730.gh_digital_bias_flt              , 1, 30);
-  ETMDigitalInitializeInput(&global_data_A37730.gh_digital_hw_flt                , 1, 30);
-  ETMDigitalInitializeInput(&global_data_A37730.gh_digital_top_htr_ov_flt        , 1, 30);
-  ETMDigitalInitializeInput(&global_data_A37730.gh_digital_top_htr_uv_flt        , 1, 30);
-  ETMDigitalInitializeInput(&global_data_A37730.digital_temp_lt_75               , 1, 30);
+  ETMDigitalInitializeInput(&global_data_A37730.gh_digital_bias_flt              , 0, 30);
+  ETMDigitalInitializeInput(&global_data_A37730.gh_digital_hw_flt                , 0, 30);
+  ETMDigitalInitializeInput(&global_data_A37730.gh_digital_top_htr_ov_flt        , 0, 30);
+  ETMDigitalInitializeInput(&global_data_A37730.gh_digital_top_htr_uv_flt        , 0, 30);
+  ETMDigitalInitializeInput(&global_data_A37730.digital_temp_lt_75               , 0, 30);
 //  ETMDigitalInitializeInput(&global_data_A37730.                         , 1, 30);
 
  
@@ -1507,11 +1513,11 @@ void UpdateFaults(void) {
 //      _FAULT_ADC_DIGITAL_ARC = 0;
 //    }
     
-    if (global_data_A37730.digital_temp_lt_75.filtered_reading == 0) {
-      _FAULT_DIGITAL_OVER_TEMP = 1;
-    } else if (global_data_A37730.reset_active) {
-      _FAULT_DIGITAL_OVER_TEMP = 0;
-    }
+//    if (global_data_A37730.digital_temp_lt_75.filtered_reading == 0) {
+//      _FAULT_DIGITAL_OVER_TEMP = 1;
+//    } else if (global_data_A37730.reset_active) {
+//      _FAULT_DIGITAL_OVER_TEMP = 0;
+//    }
   
     if (global_data_A37730.gh_digital_bias_flt.filtered_reading == 1) {
       _FAULT_DIGITAL_BIAS = 1;
@@ -1585,11 +1591,11 @@ void UpdateFaults(void) {
       _FAULT_ADC_HTR_V_MON_OVER_RELATIVE = 0;
     }
       
-    if (ETMAnalogCheckUnderRelative(&global_data_A37730.input_htr_v_mon)) {
-      _FAULT_ADC_HTR_V_MON_UNDER_RELATIVE = 1;
-    } else if (global_data_A37730.reset_active) {
-      _FAULT_ADC_HTR_V_MON_UNDER_RELATIVE = 0;
-    }
+//    if (ETMAnalogCheckUnderRelative(&global_data_A37730.input_htr_v_mon)) {   // TEST
+//      _FAULT_ADC_HTR_V_MON_UNDER_RELATIVE = 1;
+//    } else if (global_data_A37730.reset_active) {
+//      _FAULT_ADC_HTR_V_MON_UNDER_RELATIVE = 0;
+//    }
 
     if (global_data_A37730.control_state >= STATE_POWER_SUPPLY_RAMP_UP) {
       if (ETMAnalogCheckOverRelative(&global_data_A37730.input_hv_v_mon)) {
@@ -1667,9 +1673,9 @@ void UpdateLEDandStatusOutuputs(void) {
   // System OK Status
 //  if (global_data_A37730.control_state <= STATE_FAULT_HEATER_ON) {
   if (_FAULT_REGISTER != 0) {
-    //PIN_LED_FAULT_STATE = OLL_LED_ON;
+    PIN_LED_FAULT_STATE = OLL_LED_ON;
   } else {
-    //PIN_LED_FAULT_STATE = !OLL_LED_ON;
+    PIN_LED_FAULT_STATE = !OLL_LED_ON;
   }
 }
 

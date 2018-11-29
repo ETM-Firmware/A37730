@@ -71,7 +71,7 @@
 #define __MODE_ETHERNET_INTERFACE
 //#define __MODE_MODBUS_INTERFACE
 #define __MODBUS_MONITOR
-//#define __OPTION_ENABLE_CAN
+#define __OPTION_ENABLE_CAN
 #define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
 #define HEATER_RAMP_TIME                        21000        // 3.5min
 #define RAMP_TIME_INTERVAL                      30           // 300ms

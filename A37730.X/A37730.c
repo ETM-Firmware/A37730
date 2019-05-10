@@ -169,7 +169,6 @@ void DoStateMachine(void) {
     
   case STATE_HEATER_DISABLED:
     DisableBeam();     // TEST
-    PIN_BEAM_ENABLE_SERIAL = !OLL_SERIAL_ENABLE;   // TEST
     DisableHighVoltage();   // TEST
     DisableHeater();
     PIN_TRIG_PULSE_WIDTH_LIMITER = !OLL_TRIG_PULSE_DISABLE; //do not actively limit PW
@@ -261,9 +260,6 @@ void DoStateMachine(void) {
     _CONTROL_NOT_READY = 1;
     DisableBeam();
     DisableHighVoltage();
-    EnableTopSupply();  // TEST
-    PIN_BEAM_ENABLE_SERIAL = OLL_SERIAL_ENABLE;   // TEST
-    EnableBeam();   // TEST
     global_data_A37730.current_state_msg = STATE_MESSAGE_HEATER_WARM_UP_DONE;
     global_data_A37730.heater_start_up_attempts = 0;
     while (global_data_A37730.control_state == STATE_HEATER_WARM_UP_DONE) {
@@ -1404,8 +1400,7 @@ void DoA37730(void) {
       switch ((global_data_A37730.run_time_counter & 0b111)) {
 	
       case 0:
-        //WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_A, global_data_A37730.analog_output_high_voltage.dac_setting_scaled_and_calibrated);
-        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_A, global_data_A37730.testDAC);
+        WriteLTC265X(&U29_LTC2654, LTC265X_WRITE_AND_UPDATE_DAC_A, global_data_A37730.analog_output_high_voltage.dac_setting_scaled_and_calibrated);
         ETMCanSlaveSetDebugRegister(0, global_data_A37730.analog_output_high_voltage.dac_setting_scaled_and_calibrated);
         break;
 	
@@ -1576,14 +1571,14 @@ void UpdateFaults(void) {
       _FAULT_ADC_HTR_I_MON_OVER_ABSOLUTE = 0;
     }
 
-    // Only check for heater under current after the ramp up process is complete
-    if (global_data_A37730.control_state > STATE_HEATER_RAMP_UP) {
-      if (ETMAnalogCheckUnderAbsolute(&global_data_A37730.input_htr_i_mon)) {
-        _FAULT_ADC_HTR_I_MON_UNDER_ABSOLUTE = 1;
-      }
-    } else if (global_data_A37730.reset_active) {
-      _FAULT_ADC_HTR_I_MON_UNDER_ABSOLUTE = 0;  
-    }  
+//    // Only check for heater under current after the ramp up process is complete
+//    if (global_data_A37730.control_state > STATE_HEATER_RAMP_UP) {                            //TEST
+//      if (ETMAnalogCheckUnderAbsolute(&global_data_A37730.input_htr_i_mon)) {
+//        _FAULT_ADC_HTR_I_MON_UNDER_ABSOLUTE = 1;
+//      }
+//    } else if (global_data_A37730.reset_active) {
+//      _FAULT_ADC_HTR_I_MON_UNDER_ABSOLUTE = 0;  
+//    }  
 
     if (ETMAnalogCheckOverRelative(&global_data_A37730.input_htr_v_mon)) {
       _FAULT_ADC_HTR_V_MON_OVER_RELATIVE = 1;
@@ -1597,7 +1592,7 @@ void UpdateFaults(void) {
 //      _FAULT_ADC_HTR_V_MON_UNDER_RELATIVE = 0;
 //    }
 
-    if (global_data_A37730.control_state >= STATE_POWER_SUPPLY_RAMP_UP) {
+    if (global_data_A37730.control_state >= STATE_POWER_SUPPLY_RAMP_UP) {    
       if (ETMAnalogCheckOverRelative(&global_data_A37730.input_hv_v_mon)) {
         _FAULT_ADC_HV_V_MON_OVER_RELATIVE = 1;
       }
@@ -1605,16 +1600,16 @@ void UpdateFaults(void) {
       _FAULT_ADC_HV_V_MON_OVER_RELATIVE = 0;
     }
     
-    if (global_data_A37730.control_state >= STATE_POWER_SUPPLY_RAMP_UP) {
-      if (global_data_A37730.interlock_relay_closed.filtered_reading == 0) {
-        _STATUS_INTERLOCK_INHIBITING_HV = 1;
-      }
-    } else if (global_data_A37730.reset_active) {
-      _STATUS_INTERLOCK_INHIBITING_HV = 0;
-    }
+//    if (global_data_A37730.control_state >= STATE_POWER_SUPPLY_RAMP_UP) {             //TEST
+//      if (global_data_A37730.interlock_relay_closed.filtered_reading == 0) {
+//        _STATUS_INTERLOCK_INHIBITING_HV = 1;
+//      }
+//    } else if (global_data_A37730.reset_active) {
+//      _STATUS_INTERLOCK_INHIBITING_HV = 0;
+//    }
     
 
-    // Only check for HV undervoltage after HV is enabled
+    // Only check for HV undervoltage after HV is enabled          
     if (global_data_A37730.control_state >= STATE_HV_ON) {
       if (ETMAnalogCheckUnderRelative(&global_data_A37730.input_hv_v_mon)) {
         _FAULT_ADC_HV_V_MON_UNDER_RELATIVE = 1;
@@ -1623,23 +1618,23 @@ void UpdateFaults(void) {
       _FAULT_ADC_HV_V_MON_UNDER_RELATIVE = 0;
     }
     
-    // Only check for top supply overvoltage after top is enabled
-    if (global_data_A37730.control_state >= STATE_TOP_READY) {
-      if (ETMAnalogCheckOverRelative(&global_data_A37730.input_top_v_mon)) {
-        _FAULT_ADC_TOP_V_MON_OVER_RELATIVE = 1;
-      }
-    } else if (global_data_A37730.reset_active) {
-      _FAULT_ADC_TOP_V_MON_OVER_RELATIVE = 0;
-    }
-    
-    // Only check for top supply undervoltage after top is enabled
-    if (global_data_A37730.control_state >= STATE_TOP_READY) {
-      if (ETMAnalogCheckUnderRelative(&global_data_A37730.input_top_v_mon)) {
-        _FAULT_ADC_TOP_V_MON_UNDER_RELATIVE = 1;
-      }
-    } else if (global_data_A37730.reset_active) {
-      _FAULT_ADC_TOP_V_MON_UNDER_RELATIVE = 0;
-    }
+//    // Only check for top supply overvoltage after top is enabled
+//    if (global_data_A37730.control_state >= STATE_TOP_READY) {                      //TEST
+//      if (ETMAnalogCheckOverRelative(&global_data_A37730.input_top_v_mon)) {
+//        _FAULT_ADC_TOP_V_MON_OVER_RELATIVE = 1;
+//      }
+//    } else if (global_data_A37730.reset_active) {
+//      _FAULT_ADC_TOP_V_MON_OVER_RELATIVE = 0;
+//    }
+//    
+//    // Only check for top supply undervoltage after top is enabled
+//    if (global_data_A37730.control_state >= STATE_TOP_READY) {                     //TEST
+//      if (ETMAnalogCheckUnderRelative(&global_data_A37730.input_top_v_mon)) {
+//        _FAULT_ADC_TOP_V_MON_UNDER_RELATIVE = 1;
+//      }
+//    } else if (global_data_A37730.reset_active) {
+//      _FAULT_ADC_TOP_V_MON_UNDER_RELATIVE = 0;
+//    }
 
     if (ETMAnalogCheckOverAbsolute(&global_data_A37730.input_bias_v_mon)) {
       _FAULT_ADC_BIAS_V_MON_OVER_ABSOLUTE = 1;
@@ -1653,12 +1648,12 @@ void UpdateFaults(void) {
       _FAULT_ADC_BIAS_V_MON_UNDER_ABSOLUTE = 0;
     }
       
-    if (global_data_A37730.over_prf >= OVER_PRF_COUNT) {
-      _FAULT_OVER_PRF = 1;
-      global_data_A37730.over_prf = 0;
-    } else if (global_data_A37730.reset_active) {
-      _FAULT_OVER_PRF = 0;
-    }
+//    if (global_data_A37730.over_prf >= OVER_PRF_COUNT) {  //TEST
+//      _FAULT_OVER_PRF = 1;
+//      global_data_A37730.over_prf = 0;
+//    } else if (global_data_A37730.reset_active) {
+//      _FAULT_OVER_PRF = 0;
+//    }
 
   
   if ((global_data_A37730.heater_ramp_up_time == 0) && (global_data_A37730.control_state == STATE_HEATER_RAMP_UP)) {

@@ -6,7 +6,7 @@
   10.1.2018
 
   --------------------------------------------
-*/
+ */
 
 #ifndef __A37730_H
 #define __A37730_H
@@ -48,7 +48,7 @@
   
   EEPROM - The internal EEPROM is used at this time
   
-*/
+ */
 
 
 
@@ -148,7 +148,7 @@
  
   G14 - CPU HV ENABLE
   
-*/
+ */
 /*
    F E D C B A 9 8 7 6 5 4 3 2 1 0
 
@@ -164,7 +164,7 @@ F  1 1 1 1 1 1 1 1 1 1 0 0 1 1 1 1
 
 G  1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
 
-*/
+ */
 
 
 #define A37730_TRISA_VALUE 0b1110111111111111 
@@ -185,7 +185,7 @@ G  1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1
   Conversion rate of 111KHz (13.875 Khz per Channel), 138 Samples per 10mS interrupt
   Scan Through Selected Inputs (8 selected at any point in time)
 
-*/
+ */
 
 #define ADCON1_SETTING          (ADC_MODULE_OFF & ADC_IDLE_STOP & ADC_FORMAT_INTG & ADC_CLK_AUTO & ADC_AUTO_SAMPLING_ON)
 #define ADCON2_SETTING          (ADC_VREF_AVDD_EXT & ADC_SCAN_ON & ADC_SAMPLES_PER_INT_8 & ADC_ALT_BUF_ON & ADC_ALT_INPUT_OFF)
@@ -287,7 +287,7 @@ G  1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1
   This SPI port is used to connect with the gun driver
   This must be slower to compensate for the 2x delay across the optocoupler 200ns with filtering in one direction, 80ns (without filtering) in the other direction
   Minimum clock period is therefore 280ns + holdtime + margins
-*/
+ */
 #define A37730_SPI1CON_VALUE  (FRAME_ENABLE_OFF & ENABLE_SDO_PIN & SPI_MODE16_OFF & SPI_SMP_OFF & SPI_CKE_OFF & SLAVE_ENABLE_OFF & CLK_POL_ACTIVE_HIGH & MASTER_ENABLE_ON)
 #define A37730_SPI1STAT_VALUE (SPI_ENABLE & SPI_IDLE_CON & SPI_RX_OVFLOW_CLR)   
 
@@ -299,7 +299,6 @@ G  1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 //#define A37730_T2CON_VALUE     (T2_ON & T2_IDLE_CON & T2_GATE_OFF & T2_PS_1_8 & T2_32BIT_MODE_OFF & T2_SOURCE_INT)
 //#define A37730_PR2_VALUE_US    10000   // 10mS
 //#define A37730_PR2_VALUE       ((FCY_CLK/1000000)*A37730_PR2_VALUE_US/8)
-
 ///*
 //  --- Timer3 Setup ---
 //  Period of 1S
@@ -311,11 +310,11 @@ G  1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 /*
   --- Timer3 Setup ---
   Period of 400mS
-*/
+ */
 #define A37730_T3CON_VALUE     (T3_ON & T3_IDLE_CON & T3_GATE_OFF & T3_PS_1_64 & T3_SOURCE_INT)
 #define A37730_PR3_VALUE        62500  // 400mS
 
- 
+
 // ---- Hard Coded Delays ---- //
 #define DELAY_FPGA_CABLE_DELAY 10
 
@@ -329,7 +328,7 @@ G  1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 #define WATCHDOG_VALUE_1        0xCE3E   // 52798 - Allowed range from 48703 to 56893  //0xEFF0
 
 #define WATCHDOG_MAX_COUNT      80                           //800ms
-   
+
 #define MIN_WD_VALUE_0          0x2202
 #define MAX_WD_VALUE_0          0x4200
 #define MIN_WD_VALUE_1          0xBE3F  //0xBFF0
@@ -342,7 +341,7 @@ G  1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 
 #define TARGET_CUSTOMER_HARDWARE_REV                 0b000100
 #define INTERFACE_HARDWARE_REV                       0b01000001    // 0x41 'A'
-  
+
 //// MAX1230 Control Words
 //#define MAX1230_CONVERSION_BYTE                      0b10000011
 ////#define MAX1230_SETUP_BYTE                           0b01101000    //with internal ref
@@ -353,155 +352,153 @@ G  1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 
 #define LTC265X_CMD_SELECT_INTERNAL_REFERENCE_BYTE    (LTC265X_CMD_SELECT_INTERNAL_REFERENCE | LTC265X_ADR_ALL_DACS) 
 
-
-
-
 typedef struct {
-  //unsigned int watchdog_count_error;          // 
-  unsigned int control_state;                   // This stores the state of the state machine
-  unsigned int request_heater_enable;           // This indicates that heater_enable has been requested (either from CAN module or from discrete inputs depending upon configuration)
-  unsigned int request_hv_enable;               // This indicates that hv_enable has been requested (either from CAN module or from discrete inputs depending upon configuration)
-  unsigned int request_beam_enable;             // This indicates that beam_enable has been requested (either from CAN module or from discrete inputs depending upon configuration)
-  unsigned int reset_active;                    // This indicates that reset has been requested (either from CAN module or from discrete inputs depending upon configuration)
-  unsigned int ethernet_reset_cmd;
-  
-  unsigned int heater_start_up_attempts;        // This counts the number of times the heater has started up without successfully completing it's ramp up.
+    //unsigned int watchdog_count_error;          // 
+    unsigned int control_state; // This stores the state of the state machine
+    unsigned int request_heater_enable; // This indicates that heater_enable has been requested (either from CAN module or from discrete inputs depending upon configuration)
+    unsigned int request_hv_enable; // This indicates that hv_enable has been requested (either from CAN module or from discrete inputs depending upon configuration)
+    unsigned int request_beam_enable; // This indicates that beam_enable has been requested (either from CAN module or from discrete inputs depending upon configuration)
+    unsigned int reset_active; // This indicates that reset has been requested (either from CAN module or from discrete inputs depending upon configuration)
+    unsigned int ethernet_reset_cmd;
 
-  unsigned int run_time_counter;                // This counts how long the unit has been running for.  It wraps every 11 minutes
-  unsigned int fault_restart_remaining;         // This counts down the delay of the heater automatic restart
-  unsigned int power_supply_startup_remaining;  // This counts down the ramp up time of the HV supply
-  unsigned int heater_warm_up_time_remaining;   // This counts down the heater warm up
-  unsigned int heater_ramp_up_time;             // This counts the time it takes the heater to ramp up
-  unsigned int watchdog_counter;                // This counts when to updated the watchdog DAC output on the converter logic board
-  unsigned int watchdog_state_change;           // This flag is so the DAC isn't rewritten to for at least 80 ms
-  unsigned int watchdog_set_mode;               // This is the DAC/ADC test setting for the SPI watchdog
-  unsigned int heater_ramp_interval;            // This counts the interval between heater ramp voltage changes
-  unsigned int heater_voltage_target;           // This is the targeted heater voltage set point
-  unsigned int fault_holdoff_state;             // This is whether to hold off current limit fault during htr warmup period
-  unsigned int fault_holdoff_count;             // This is a counter for the current limit fault holdoff
-  unsigned int mux_fault;
-  
-  unsigned int previous_0x0A_val;
-  unsigned int previous_0x0B_val;
-  unsigned int previous_0x0C_val;
-  unsigned int previous_0x0D_val;
-  
-  
-  volatile unsigned char control_config;        // This indicates when all set values from the CAN interface have been received
+    unsigned int heater_start_up_attempts; // This counts the number of times the heater has started up without successfully completing it's ramp up.
 
-  unsigned int state_message;                   // This is a state message for the modbus module
-  unsigned int current_state_msg;               // This stores the preliminary state message
+    unsigned int run_time_counter; // This counts how long the unit has been running for.  It wraps every 11 minutes
+    unsigned int fault_restart_remaining; // This counts down the delay of the heater automatic restart
+    unsigned int power_supply_startup_remaining; // This counts down the ramp up time of the HV supply
+    unsigned int heater_warm_up_time_remaining; // This counts down the heater warm up
+    unsigned int heater_ramp_up_time; // This counts the time it takes the heater to ramp up
+    unsigned int watchdog_counter; // This counts when to updated the watchdog DAC output on the converter logic board
+    unsigned int watchdog_state_change; // This flag is so the DAC isn't rewritten to for at least 80 ms
+    unsigned int watchdog_set_mode; // This is the DAC/ADC test setting for the SPI watchdog
+    unsigned int heater_ramp_interval; // This counts the interval between heater ramp voltage changes
+    unsigned int heater_voltage_target; // This is the targeted heater voltage set point
+    unsigned int fault_holdoff_state; // This is whether to hold off current limit fault during htr warmup period
+    unsigned int fault_holdoff_count; // This is a counter for the current limit fault holdoff
+    unsigned int mux_fault;
 
-  unsigned int can_high_voltage_set_point;      // This is the high voltage set point set over the can interface (it is only used if can mode is selected)
-  unsigned int can_pulse_top_set_point;         // This is the pulse top set point set over the can interface (it is only used if can mode is selected)
-  unsigned int can_heater_voltage_set_point;    // This is the heater voltage set point set over the can interface (it is only used if can mode is selected)
-  
-  unsigned int ethernet_htr_ref;
-  unsigned int ethernet_top_ref;
-  unsigned int ethernet_hv_ref;
-
-  unsigned int discrete_commands_always;
-  unsigned int analog_references_always;
-  unsigned int modbus_controls_enabled;
-  unsigned int modbus_references_enabled;
-  unsigned int ethernet_references_enabled;
-  
-  unsigned int last_period;                     // This is for PRF calculation
-  unsigned int trigger_complete;                // This is for trigger
-  unsigned int period_filtered;
-  unsigned int limiting_active;
-  unsigned int rep_rate_deci_hertz;
-  unsigned int over_prf;
-  unsigned int pulses_on;
-  
-  unsigned int testDAC;
-  
-  unsigned long tick_timer;
-  unsigned long tick_period_timer;
-  
-  unsigned int accumulator_counter;             // This counts the number of converstion on the internal ADC (used for averaging)
-
-  unsigned int dac_write_error_count;           // This counts the total number of dac write errors
-  unsigned int dac_write_failure_count;         // This counts the total number of unsessful dac transmissions (After N write errors it gives us)
-  unsigned int dac_write_failure;               // This indicates that the previous attempt to write to the dac failed
-
-  unsigned int heater_voltage_current_limited;  // This counter is used to track how long the heater is opperating in current limited mode. 
-  unsigned int previous_state_pin_customer_hv_on;  // This stores the previous state of customer HV on input.  An On -> Off transion of this pin is used to generate a reset in discrete control mode
+    unsigned int previous_0x0A_val;
+    unsigned int previous_0x0B_val;
+    unsigned int previous_0x0C_val;
+    unsigned int previous_0x0D_val;
 
 
-  // These are the Data Structures for the DAC outputs on the converter logic board
-  AnalogOutput analog_output_high_voltage;
-  AnalogOutput analog_output_top_voltage;
-  AnalogOutput analog_output_heater_voltage;
-  unsigned int dac_digital_hv_enable;
-  unsigned int dac_digital_heater_enable;
-  unsigned int dac_digital_top_enable;
-  unsigned int dac_digital_trigger_enable;
-  unsigned int dac_digital_watchdog_oscillator; //
+    volatile unsigned char control_config; // This indicates when all set values from the CAN interface have been received
 
-  // These are the Data Structures for the on board DAC outputs
-  AnalogOutput monitor_heater_voltage;
-  AnalogOutput monitor_heater_current;
-  AnalogOutput monitor_cathode_voltage;
-  AnalogOutput monitor_grid_voltage;
-  
+    unsigned int state_message; // This is a state message for the modbus module
+    unsigned int current_state_msg; // This stores the preliminary state message
 
+    unsigned int can_high_voltage_set_point; // This is the high voltage set point set over the can interface (it is only used if can mode is selected)
+    unsigned int can_pulse_top_set_point; // This is the pulse top set point set over the can interface (it is only used if can mode is selected)
+    unsigned int can_heater_voltage_set_point; // This is the heater voltage set point set over the can interface (it is only used if can mode is selected)
 
-  // These are the Data Structures for the Digital Data from the FPGA on the Converter Logic board
-//  TYPE_DIGITAL_INPUT fpga_coverter_logic_pcb_rev_mismatch;
-//  TYPE_DIGITAL_INPUT fpga_firmware_major_rev_mismatch;
-//  TYPE_DIGITAL_INPUT fpga_firmware_minor_rev_mismatch;
-//  TYPE_DIGITAL_INPUT fpga_arc;
-//  TYPE_DIGITAL_INPUT fpga_arc_high_voltage_inihibit_active;
-//  TYPE_DIGITAL_INPUT fpga_heater_voltage_less_than_4_5_volts;
-//  TYPE_DIGITAL_INPUT fpga_module_temp_greater_than_65_C;
-//  TYPE_DIGITAL_INPUT fpga_module_temp_greater_than_75_C;
-//  TYPE_DIGITAL_INPUT fpga_pulse_width_limiting_active;
-//  TYPE_DIGITAL_INPUT fpga_prf_fault;
-//  TYPE_DIGITAL_INPUT fpga_current_monitor_pulse_width_fault;
-//  TYPE_DIGITAL_INPUT fpga_grid_module_hardware_fault;
-//  TYPE_DIGITAL_INPUT fpga_grid_module_over_voltage_fault;
-//  TYPE_DIGITAL_INPUT fpga_grid_module_under_voltage_fault;
-//  TYPE_DIGITAL_INPUT fpga_grid_module_bias_voltage_fault;
-//  TYPE_DIGITAL_INPUT fpga_hv_regulation_warning;
-//  TYPE_DIGITAL_INPUT fpga_dipswitch_1_on;
-//  TYPE_DIGITAL_INPUT fpga_test_mode_toggle_switch_set_to_test;
-//  TYPE_DIGITAL_INPUT fpga_local_mode_toggle_switch_set_to_local;
+    unsigned int ethernet_htr_ref;
+    unsigned int ethernet_top_ref;
+    unsigned int ethernet_hv_ref;
 
+    unsigned int discrete_commands_always;
+    unsigned int analog_references_always;
+    unsigned int modbus_controls_enabled;
+    unsigned int modbus_references_enabled;
+    unsigned int ethernet_references_enabled;
 
-  // These are Data Structures for the inputs to the PIC's internal ADC
-  
-  AnalogInput  input_hv_v_mon;
-  AnalogInput  input_hv_i_mon;
-  AnalogInput  input_gun_i_peak;
-  AnalogInput  input_htr_v_mon;
-  AnalogInput  input_htr_i_mon;
-  AnalogInput  input_top_v_mon;
-  AnalogInput  input_bias_v_mon;
-  AnalogInput  input_24_v_mon;
-  AnalogInput  input_temperature_mon;
-//  TYPE_DIGITAL_INPUT adc_digital_warmup_flt;
-//  TYPE_DIGITAL_INPUT adc_digital_watchdog_flt;
-//  TYPE_DIGITAL_INPUT adc_digital_arc_flt;
-//  TYPE_DIGITAL_INPUT adc_digital_over_temp_flt;
-//  TYPE_DIGITAL_INPUT adc_digital_pulse_width_duty_flt;
-//  TYPE_DIGITAL_INPUT adc_digital_grid_flt;
-  AnalogInput  input_dac_monitor;
+    unsigned int last_period; // This is for PRF calculation
+    unsigned int trigger_complete; // This is for trigger
+    unsigned int period_filtered;
+    unsigned int limiting_active;
+    unsigned int rep_rate_deci_hertz;
+    unsigned int over_prf;
+    unsigned int pulses_on;
 
-  TYPE_DIGITAL_INPUT interlock_relay_closed;
-  TYPE_DIGITAL_INPUT enable_relay_closed;
-  TYPE_DIGITAL_INPUT gh_digital_bias_flt;
-  TYPE_DIGITAL_INPUT gh_digital_hw_flt;
-  TYPE_DIGITAL_INPUT gh_digital_top_htr_ov_flt;
-  TYPE_DIGITAL_INPUT gh_digital_top_htr_uv_flt;
-  TYPE_DIGITAL_INPUT digital_temp_lt_75;
-  
+    unsigned int testDAC;
+
+    unsigned long tick_timer;
+    unsigned long tick_period_timer;
+
+    unsigned int accumulator_counter; // This counts the number of converstion on the internal ADC (used for averaging)
+
+    unsigned int dac_write_error_count; // This counts the total number of dac write errors
+    unsigned int dac_write_failure_count; // This counts the total number of unsessful dac transmissions (After N write errors it gives us)
+    unsigned int dac_write_failure; // This indicates that the previous attempt to write to the dac failed
+
+    unsigned int heater_voltage_current_limited; // This counter is used to track how long the heater is opperating in current limited mode. 
+    unsigned int previous_state_pin_customer_hv_on; // This stores the previous state of customer HV on input.  An On -> Off transion of this pin is used to generate a reset in discrete control mode
 
 
-//  AnalogInput  pos_5v_mon;  // an13
-//  AnalogInput  pos_15v_mon; // an14
-//  AnalogInput  neg_15v_mon; // an15
-  
+    // These are the Data Structures for the DAC outputs on the converter logic board
+    AnalogOutput analog_output_high_voltage;
+    AnalogOutput analog_output_top_voltage;
+    AnalogOutput analog_output_heater_voltage;
+    unsigned int dac_digital_hv_enable;
+    unsigned int dac_digital_heater_enable;
+    unsigned int dac_digital_top_enable;
+    unsigned int dac_digital_trigger_enable;
+    unsigned int dac_digital_watchdog_oscillator; //
+
+    // These are the Data Structures for the on board DAC outputs
+    AnalogOutput monitor_heater_voltage;
+    AnalogOutput monitor_heater_current;
+    AnalogOutput monitor_cathode_voltage;
+    AnalogOutput monitor_grid_voltage;
+
+
+
+    // These are the Data Structures for the Digital Data from the FPGA on the Converter Logic board
+    //  TYPE_DIGITAL_INPUT fpga_coverter_logic_pcb_rev_mismatch;
+    //  TYPE_DIGITAL_INPUT fpga_firmware_major_rev_mismatch;
+    //  TYPE_DIGITAL_INPUT fpga_firmware_minor_rev_mismatch;
+    //  TYPE_DIGITAL_INPUT fpga_arc;
+    //  TYPE_DIGITAL_INPUT fpga_arc_high_voltage_inihibit_active;
+    //  TYPE_DIGITAL_INPUT fpga_heater_voltage_less_than_4_5_volts;
+    //  TYPE_DIGITAL_INPUT fpga_module_temp_greater_than_65_C;
+    //  TYPE_DIGITAL_INPUT fpga_module_temp_greater_than_75_C;
+    //  TYPE_DIGITAL_INPUT fpga_pulse_width_limiting_active;
+    //  TYPE_DIGITAL_INPUT fpga_prf_fault;
+    //  TYPE_DIGITAL_INPUT fpga_current_monitor_pulse_width_fault;
+    //  TYPE_DIGITAL_INPUT fpga_grid_module_hardware_fault;
+    //  TYPE_DIGITAL_INPUT fpga_grid_module_over_voltage_fault;
+    //  TYPE_DIGITAL_INPUT fpga_grid_module_under_voltage_fault;
+    //  TYPE_DIGITAL_INPUT fpga_grid_module_bias_voltage_fault;
+    //  TYPE_DIGITAL_INPUT fpga_hv_regulation_warning;
+    //  TYPE_DIGITAL_INPUT fpga_dipswitch_1_on;
+    //  TYPE_DIGITAL_INPUT fpga_test_mode_toggle_switch_set_to_test;
+    //  TYPE_DIGITAL_INPUT fpga_local_mode_toggle_switch_set_to_local;
+
+
+    // These are Data Structures for the inputs to the PIC's internal ADC
+
+    AnalogInput input_hv_v_mon;
+    AnalogInput input_hv_i_mon;
+    AnalogInput input_gun_i_peak;
+    AnalogInput input_htr_v_mon;
+    AnalogInput input_htr_i_mon;
+    AnalogInput input_top_v_mon;
+    AnalogInput input_bias_v_mon;
+    AnalogInput input_24_v_mon;
+    AnalogInput input_temperature_mon;
+    //  TYPE_DIGITAL_INPUT adc_digital_warmup_flt;
+    //  TYPE_DIGITAL_INPUT adc_digital_watchdog_flt;
+    //  TYPE_DIGITAL_INPUT adc_digital_arc_flt;
+    //  TYPE_DIGITAL_INPUT adc_digital_over_temp_flt;
+    //  TYPE_DIGITAL_INPUT adc_digital_pulse_width_duty_flt;
+    //  TYPE_DIGITAL_INPUT adc_digital_grid_flt;
+    AnalogInput input_dac_monitor;
+
+    TYPE_DIGITAL_INPUT interlock_relay_closed;
+    TYPE_DIGITAL_INPUT enable_relay_closed;
+    TYPE_DIGITAL_INPUT gh_digital_bias_flt;
+    TYPE_DIGITAL_INPUT gh_digital_hw_flt;
+    TYPE_DIGITAL_INPUT gh_digital_top_htr_ov_flt;
+    TYPE_DIGITAL_INPUT gh_digital_top_htr_uv_flt;
+    TYPE_DIGITAL_INPUT digital_temp_lt_75;
+
+
+    unsigned int previous_state;
+    unsigned int arc_counter;
+    //  AnalogInput  pos_5v_mon;  // an13
+    //  AnalogInput  pos_15v_mon; // an14
+    //  AnalogInput  neg_15v_mon; // an15
+
 } TYPE_GLOBAL_DATA_A37730;
 
 extern TYPE_GLOBAL_DATA_A37730 global_data_A37730;
@@ -576,12 +573,13 @@ extern TYPE_GLOBAL_DATA_A37730 global_data_A37730;
 #define STATE_HEATER_RAMP_UP                 70
 #define STATE_HEATER_WARM_UP                 80
 #define STATE_FAULT_HEATER_ON                90
-#define STATE_HEATER_WARM_UP_DONE            100
-#define STATE_POWER_SUPPLY_RAMP_UP           110
-#define STATE_HV_ON                          120
-#define STATE_TOP_ON                         130
-#define STATE_TOP_READY                      140
-#define STATE_BEAM_ENABLE                    150
+#define STATE_HV_OFF_1SEC_DELAY              100
+#define STATE_HEATER_WARM_UP_DONE            110
+#define STATE_POWER_SUPPLY_RAMP_UP           120
+#define STATE_HV_ON                          130
+#define STATE_TOP_ON                         140
+#define STATE_TOP_READY                      150
+#define STATE_BEAM_ENABLE                    160
 
 
 #define STATE_MESSAGE_FAULT_HEATER_OFF         0x0101
@@ -610,7 +608,7 @@ extern TYPE_GLOBAL_DATA_A37730 global_data_A37730;
 /*
   --- Timer1 Setup ---
   Period of 200ms
-*/
+ */
 #define A37730_T1CON_VALUE     (T1_ON & T1_IDLE_CON & T1_GATE_OFF & T1_PS_1_256 & T1_SOURCE_INT)
 #define A37730_PR1_VALUE_US    200000   // 200ms
 #define A37730_PR1_VALUE       ((FCY_CLK/1000000)*A37730_PR1_VALUE_US/256)
@@ -651,22 +649,22 @@ extern TYPE_GLOBAL_DATA_A37730 global_data_A37730;
 #define FUNCTION_WRITE_REGISTER         0x06
 
 #define EXCEPTION_FLAGGED               0x09
- 
+
 //#define ETMMODBUS_CMD_QUEUE_SIZE   16
 
 typedef struct {
-  unsigned char function_code;
-  unsigned char received_function_code;
-  unsigned char data_length_bytes;
-  unsigned char exception_code;
-  unsigned char done;
-  unsigned int  output_address;
-  unsigned int  data_address;
-  unsigned int  qty_bits;
-  unsigned int  qty_reg;
-  unsigned int  write_value;
-  unsigned int  data[125];
-  unsigned char bit_data[125];
+    unsigned char function_code;
+    unsigned char received_function_code;
+    unsigned char data_length_bytes;
+    unsigned char exception_code;
+    unsigned char done;
+    unsigned int output_address;
+    unsigned int data_address;
+    unsigned int qty_bits;
+    unsigned int qty_reg;
+    unsigned int write_value;
+    unsigned int data[125];
+    unsigned char bit_data[125];
 } MODBUS_MESSAGE;
 
 //extern MODBUS_MESSAGE  current_command_ptr;

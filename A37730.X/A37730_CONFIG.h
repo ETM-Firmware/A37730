@@ -251,54 +251,54 @@
 #define ADC_TEMPERATURE_SENSOR_FIXED_OFFSET   0
 
 
-#define ADC_HV_VMON_FIXED_SCALE               1.0760  //.34722
+#define ADC_HV_VMON_FIXED_SCALE               .86806 //1.0760  //.34722
 #define ADC_HV_VMON_FIXED_OFFSET              0
 #define ADC_HV_VMON_RELATIVE_TRIP_SCALE       MACRO_DEC_TO_CAL_FACTOR_2(.2)
 #define ADC_HV_VMON_RELATIVE_TRIP_FLOOR       1000                     
 #define ADC_HV_VMON_RELATIVE_TRIP_COUNT       50                                // 500mS
 
 
-#define ADC_HV_IMON_FIXED_SCALE               .32296  //.10419
+#define ADC_HV_IMON_FIXED_SCALE               .15625 //.32296  //.10419
 #define ADC_HV_IMON_FIXED_OFFSET              0
 
 
-#define ADC_GUN_I_PEAK_FIXED_SCALE            .53665  //.17313
+#define ADC_GUN_I_PEAK_FIXED_SCALE            .00156 //.53665  //.17313
 #define ADC_GUN_I_PEAK_FIXED_OFFSET           0
 
 
-#define ADC_HTR_V_MON_FIXED_SCALE             .43010  //.13875
+#define ADC_HTR_V_MON_FIXED_SCALE             .34722 //.43010  //.13875
 #define ADC_HTR_V_MON_FIXED_OFFSET            0
 #define ADC_HTR_V_MON_RELATIVE_TRIP_SCALE     MACRO_DEC_TO_CAL_FACTOR_2(.2)
 #define ADC_HTR_V_MON_RELATIVE_TRIP_FLOOR     200                               // Minimum 200mV
 #define ADC_HTR_V_MON_RELATIVE_TRIP_COUNT     50                                // 500mS
 
 
-#define ADC_HTR_I_MON_FIXED_SCALE             .32296  //.10419
+#define ADC_HTR_I_MON_FIXED_SCALE             .26042 //.32296  //.10419
 #define ADC_HTR_I_MON_FIXED_OFFSET            0
 #define ADC_HTR_I_MON_OVER_LIMIT_ABSOLUTE     HTR_OC_ABS    //1750                              // 1.750 Amps
 #define ADC_HTR_I_MON_UNDER_LIMIT_ABSOLUTE    200                               // 0.200 Amps
 #define ADC_HTR_I_MON_ABSOLUTE_TRIP_TIME      50                                // 500mS
 
 
-#define ADC_TOP_V_MON_FIXED_SCALE             2.1520  //.69438
+#define ADC_TOP_V_MON_FIXED_SCALE             1.73611 //2.1520  //.69438
 #define ADC_TOP_V_MON_FIXED_OFFSET            0
 #define ADC_TOP_V_MON_RELATIVE_TRIP_SCALE     MACRO_DEC_TO_CAL_FACTOR_2(.2)
 #define ADC_TOP_V_MON_RELATIVE_TRIP_FLOOR     1000                              // 10 Volts
 #define ADC_TOP_V_MON_RELATIVE_TRIP_TIME      50                                // 500mS 
 
 
-#define ADC_BIAS_V_MON_FIXED_SCALE            1.0550  //.34688 //1.0750
+#define ADC_BIAS_V_MON_FIXED_SCALE            .86806 //1.0550  //.34688 //1.0750
 #define ADC_BIAS_V_MON_FIXED_OFFSET           0
 #define ADC_BIAS_V_MON_OVER_LIMIT_ABSOLUTE    BIAS_OVER_VOLTAGE
 #define ADC_BIAS_V_MON_UNDER_LIMIT_ABSOLUTE   BIAS_UNDER_VOLTAGE
 #define ADC_BIAS_V_MON_ABSOLUTE_TRIP_TIME     50                                // 500mS 
 
 
-#define ADC_24_V_MON_FIXED_SCALE              .41688
+#define ADC_24_V_MON_FIXED_SCALE              .15625 //.41688
 #define ADC_24_V_MON_FIXED_OFFSET             0
 
 
-#define ADC_TEMPERATURE_MON_FIXED_SCALE       .08331
+#define ADC_TEMPERATURE_MON_FIXED_SCALE       .01563 //.08331
 #define ADC_TEMPERATURE_MON_FIXED_OFFSET      20400
 
 

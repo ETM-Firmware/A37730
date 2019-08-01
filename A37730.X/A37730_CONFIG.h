@@ -258,11 +258,11 @@
 #define ADC_HV_VMON_RELATIVE_TRIP_COUNT       50                                // 500mS
 
 
-#define ADC_HV_IMON_FIXED_SCALE               .15625 //.32296  //.10419
+#define ADC_HV_IMON_FIXED_SCALE               .28212 //.15625 //.32296  //.10419
 #define ADC_HV_IMON_FIXED_OFFSET              0
 
 
-#define ADC_GUN_I_PEAK_FIXED_SCALE            .00156 //.53665  //.17313
+#define ADC_GUN_I_PEAK_FIXED_SCALE            0.16250 //.40625 //.00156 //.53665  //.17313
 #define ADC_GUN_I_PEAK_FIXED_OFFSET           0
 
 
@@ -287,7 +287,7 @@
 #define ADC_TOP_V_MON_RELATIVE_TRIP_TIME      50                                // 500mS 
 
 
-#define ADC_BIAS_V_MON_FIXED_SCALE            .86806 //1.0550  //.34688 //1.0750
+#define ADC_BIAS_V_MON_FIXED_SCALE            .86806 //.34688 //1.0750
 #define ADC_BIAS_V_MON_FIXED_OFFSET           0
 #define ADC_BIAS_V_MON_OVER_LIMIT_ABSOLUTE    BIAS_OVER_VOLTAGE
 #define ADC_BIAS_V_MON_UNDER_LIMIT_ABSOLUTE   BIAS_UNDER_VOLTAGE
@@ -321,7 +321,7 @@
 
 #define DAC_HEATER_VOLTAGE_FIXED_SCALE        7.5188
 #define DAC_HEATER_VOLTAGE_FIXED_OFFSET       0
-#define HEATER_VOLTAGE_MAX_SET_POINT          8000                              // 8V
+#define HEATER_VOLTAGE_MAX_SET_POINT          MAX_PROGRAM_HTR_VOLTAGE           // 8V
 #define HEATER_VOLTAGE_MIN_SET_POINT          0                                 // 0V
 
 

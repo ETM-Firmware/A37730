@@ -580,7 +580,7 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
     case SDO_IDX_EG_READ:
     	if (is_upload) {
         	txData[4] = global_data_A37730.input_top_v_mon.reading_scaled_and_calibrated & 0x00ff;
-        	txData[5] = (global_data_A37730.input_top_v_mon.reading_scaled_and_calibrated >> 8) & 0x00ff;        
+        	txData[5] = (global_data_A37730.input_top_v_mon.reading_scaled_and_calibrated >> 8) & 0x00ff; 
     	}
      break;
 		 

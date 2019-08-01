@@ -20,6 +20,7 @@ unsigned int next_pulse_count = 0;
 unsigned int spoof_counter = 0;
 unsigned int ARC_timer_flag = 0;
 unsigned int ARC_timer = 0;
+unsigned int Minute_Rollover = 0;
 
 
 
@@ -415,7 +416,7 @@ void DoStateMachine(void) {
         case STATE_HV_OFF_1SEC_DELAY:
             _CONTROL_NOT_READY = 1;
             DisableHighVoltage();
-            global_data_A37730.current_state_msg = STATE_MESSAGE_FAULT_HEATER_ON;
+            //global_data_A37730.current_state_msg = STATE_MESSAGE_FAULT_HEATER_ON;
             while (global_data_A37730.control_state == STATE_HV_OFF_1SEC_DELAY) {
                 DoA37730();
                 if (ARC_timer >= 100) {
@@ -423,6 +424,10 @@ void DoStateMachine(void) {
                     ARC_timer = 0;
                     EnableHighVoltage();
                     global_data_A37730.control_state = global_data_A37730.previous_state;
+
+                    if (global_data_A37730.control_state >= STATE_TOP_ON) {
+                        EnableTopSupply();
+                    }
                 }
                 //if (CheckFault()) {
                 //  global_data_A37730.control_state = STATE_FAULT_HEATER_ON;
@@ -560,7 +565,14 @@ void InitializeA37730(void) {
     _INT2EP = 0; // Interrupt on rising edge
     _INT2IP = 7; // Set interrupt to highest priority
     //  
-    //    
+    //
+
+    /* //Configure Input Capture 8 
+     IC8CON = 0bx0000000010000011; //Use input capture timer 2,interrupt on every capture, capture on rising edge.
+     _IC8IF = 0; //clear IC interrupt flag
+     _IC8IP = 7; //set IC8 interrupt to highest priority
+     _IC8IE = 1; //enable IC8 interrupt
+     */
 
     //Configure EEPROM
     ETMEEPromUseInternal();
@@ -1067,6 +1079,15 @@ void DoA37730(void) {
             ARC_timer++;
         }
 
+        if (global_data_A37730.arc_counter >= 1) {
+            Minute_Rollover++;
+        }
+        if (Minute_Rollover >= 6000) {
+            Minute_Rollover = 0;
+            _FPGA_ARC_COUNTER_GREATER_ZERO = 0;
+            _FPGA_ARC_HIGH_VOLTAGE_INHIBIT_ACTIVE = 0;
+            global_data_A37730.arc_counter = 0; //every minute arc count is cleared.
+        }
 
 #ifdef __CAN_CONTROLS
         if (global_data_A37730.control_state != STATE_FAULT_WARMUP_HEATER_OFF) {
@@ -1521,6 +1542,12 @@ void UpdateFaults(void) {
         _FAULT_HEATER_VOLTAGE_CURRENT_LIMITED = 0;
     }
 
+    if (global_data_A37730.reset_active) {
+        _FPGA_ARC_COUNTER_GREATER_ZERO = 0;
+        _FPGA_ARC_HIGH_VOLTAGE_INHIBIT_ACTIVE = 0;
+        _FAULT_ADC_DIGITAL_ARC = 0;
+    }
+
     // Evaluate the readings from the pins
 
 
@@ -1561,7 +1588,7 @@ void UpdateFaults(void) {
     }
 
     if (global_data_A37730.enable_relay_closed.filtered_reading == 1) {
-        _STATUS_ENABLE_RELAY_CLOSED = 1;
+        _STATUS_ENABLE_RELAY_CLOSED = 0;
     } else {
         _STATUS_ENABLE_RELAY_CLOSED = 0;
     }
@@ -2062,15 +2089,35 @@ void __attribute__((interrupt(__save__(CORCON, SR)), no_auto_psv)) _INT2Interrup
         global_data_A37730.arc_counter++;
         if ((global_data_A37730.arc_counter < 5)) {
             global_data_A37730.previous_state = global_data_A37730.control_state;
+            _FPGA_ARC_COUNTER_GREATER_ZERO = 1;
             ARC_timer_flag = 1;
             global_data_A37730.control_state = STATE_HV_OFF_1SEC_DELAY;
         } else if ((global_data_A37730.arc_counter >= 5)) {
+            _FPGA_ARC_HIGH_VOLTAGE_INHIBIT_ACTIVE = 1;
+            _FAULT_ADC_DIGITAL_ARC = 1;
             global_data_A37730.control_state = STATE_FAULT_HEATER_ON;
+            Minute_Rollover = 0;
             global_data_A37730.arc_counter = 0;
         }
     }
+}
+
+/*
+//Input Capture Interrupt for PRF Fault
+void __attribute__((__interrupt__)) _IC8Interrupt(void) {
+
+unsigned int t1,t2;
+t2=IC8BUF;
+t1=IC8BUF;
+_IC8IF=0;             // Clear IC8 Interrupt Status Flag
+
+period = t2-t1;
+
+//frequency = 1.0/period;
 
 }
+ */
+
 //void ETMAnalogClearFaultCounters(AnalogInput* ptr_analog_input) {
 //  ptr_analog_input->absolute_under_counter = 0;
 //  ptr_analog_input->absolute_over_counter = 0;

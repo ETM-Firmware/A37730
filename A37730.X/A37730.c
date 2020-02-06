@@ -429,12 +429,6 @@ void DoStateMachine(void) {
                         EnableTopSupply();
                     }
                 }
-                //if (CheckFault()) {
-                //  global_data_A37730.control_state = STATE_FAULT_HEATER_ON;
-                //}
-                //if (CheckHeaterFault()) {
-                //   global_data_A37730.control_state = STATE_FAULT_HEATER_OFF;
-                // }
             }
             break;
 

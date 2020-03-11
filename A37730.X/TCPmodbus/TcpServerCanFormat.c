@@ -594,7 +594,7 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
 
     case SDO_IDX_IKP_READ:
     	if (is_upload) {
-            set_value = global_data_A37730.input_gun_i_peak.reading_scaled_and_calibrated /10;
+            set_value = global_data_A37730.PRF;//global_data_A37730.input_gun_i_peak.reading_scaled_and_calibrated /10;
         	txData[4] = set_value & 0x00ff;
         	txData[5] = (set_value >> 8) & 0x00ff;        
     	}

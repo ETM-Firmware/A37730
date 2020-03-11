@@ -495,6 +495,7 @@ typedef struct {
 
     unsigned int previous_state;
     unsigned int arc_counter;
+    unsigned int PRF;
     //  AnalogInput  pos_5v_mon;  // an13
     //  AnalogInput  pos_15v_mon; // an14
     //  AnalogInput  neg_15v_mon; // an15

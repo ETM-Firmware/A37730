@@ -22,6 +22,10 @@ unsigned int ARC_timer_flag = 0;
 unsigned int ARC_timer = 0;
 unsigned int Minute_Rollover = 0;
 
+double TrigPeriodDouble = 0;
+double DoubleTemp = 0;
+unsigned int TrigPeriod = 0;
+
 
 
 void DoStateMachine(void); // This handles the state machine for the interface board
@@ -2068,6 +2072,20 @@ void __attribute__((interrupt(__save__(CORCON, SR)), no_auto_psv)) _INT4Interrup
             global_data_A37730.last_period = 62501; // This will indicate that the PRF is Less than 2.5Hz
         }
 
+        TrigPeriodDouble = ((double) global_data_A37730.last_period);
+        DoubleTemp = (TrigPeriodDouble/156.25);
+        DoubleTemp = DoubleTemp/1000;
+        DoubleTemp = 1/DoubleTemp;
+        DoubleTemp = DoubleTemp*10;
+        TrigPeriod = ((unsigned int) DoubleTemp);
+        global_data_A37730.PRF = TrigPeriod;
+        
+        if(global_data_A37730.PRF >= 1000){
+            _FAULT_OVER_PRF = 1;
+        }else{
+            _FAULT_OVER_PRF = 0;
+        }
+        
         _T3IF = 0;
 
         global_data_A37730.trigger_complete = 1;

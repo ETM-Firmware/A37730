@@ -496,6 +496,11 @@ typedef struct {
     unsigned int previous_state;
     unsigned int arc_counter;
     unsigned int PRF;
+	unsigned int Trigger_Period;
+	
+	double Trigger_Period_Double;
+	double Scaled_Trigger_Period_Double;
+
     //  AnalogInput  pos_5v_mon;  // an13
     //  AnalogInput  pos_15v_mon; // an14
     //  AnalogInput  neg_15v_mon; // an15

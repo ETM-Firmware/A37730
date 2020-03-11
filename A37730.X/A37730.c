@@ -22,12 +22,6 @@ unsigned int ARC_timer_flag = 0;
 unsigned int ARC_timer = 0;
 unsigned int Minute_Rollover = 0;
 
-double TrigPeriodDouble = 0;
-double DoubleTemp = 0;
-unsigned int TrigPeriod = 0;
-
-
-
 void DoStateMachine(void); // This handles the state machine for the interface board
 void InitializeA37730(void); // Initialize the A37730 for operation
 void DoStartupLEDs(void); // Used to flash the LEDs at startup
@@ -2068,19 +2062,22 @@ void __attribute__((interrupt(__save__(CORCON, SR)), no_auto_psv)) _INT4Interrup
         global_data_A37730.last_period = TMR3;
         TMR3 = 0;
         if (_T3IF) {
-            // The timer exceed it's period of 400mS - (Will happen if the PRF is less than 2.5Hz)
+            // The timer exceed its period of 400mS - (Will happen if the PRF is less than 2.5Hz)
             global_data_A37730.last_period = 62501; // This will indicate that the PRF is Less than 2.5Hz
         }
 
-        TrigPeriodDouble = ((double) global_data_A37730.last_period);
-        DoubleTemp = (TrigPeriodDouble/156.25);
-        DoubleTemp = DoubleTemp/1000;
-        DoubleTemp = 1/DoubleTemp;
-        DoubleTemp = DoubleTemp*10;
-        TrigPeriod = ((unsigned int) DoubleTemp);
-        global_data_A37730.PRF = TrigPeriod;
+        global_data_A37730.Trigger_Period_Double = ((double) global_data_A37730.last_period);
+		//Following code converts TMR3 to msec to get the trigger period (TMR3/156.25)
+		//this msec period is then coverted to seconds (period/1000)
+		//then the period is converted to the PRF of the trigger (1/period)
+		//this value is then multiplied by 10 for GUI scaling
+        global_data_A37730.Scaled_Trigger_Period_Double = (10*(1/((global_data_A37730.Trigger_Period_Double/156.25)/1000)));
+		global_data_A37730.Trigger_Period = ((unsigned int) global_data_A37730.Scaled_Trigger_Period_Double);
+		
+		global_data_A37730.PRF = global_data_A37730.Trigger_Period;
         
-        if(global_data_A37730.PRF >= 1000){
+		//Fault if PRF limit exceeded
+        if(global_data_A37730.PRF >= PRF_LIMIT){
             _FAULT_OVER_PRF = 1;
         }else{
             _FAULT_OVER_PRF = 0;

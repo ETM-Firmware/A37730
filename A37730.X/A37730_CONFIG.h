@@ -222,7 +222,8 @@
 
 #define HEATER_REGULATION_INCREMENT           50       // (50mV) This is the regulation increment for the heater voltage
 
-#define OVER_PRF_COUNT                        5       //  50ms
+#define OVER_PRF_COUNT                        5        //  50ms
+#define PRF_LIMIT                        	  5000     //  500Hz
 
 
 
